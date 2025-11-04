@@ -1,0 +1,52 @@
+[project]
+name = "aiiabox"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "admin@example.org"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4"
+dependencies = [
+    "django (>=5.2.7,<6.0.0)",
+    "django-environ (>=0.12.0,<0.13.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+coverage = "^7.10.6"
+flake8 = "^7.3.0"
+pip-audit = "^2.9.0"
+pip-tools = "^7.5.0"
+poetry = "^2.1.4"
+poetry-plugin-export = "^1.9.0"
+pre-commit = "^4.3.0"
+djlint = "^1.36.4"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | migrations
+)/
+'''
+# Custom spacing - Black handles this through its default behavior
+# One-liners stay together, multi-line statements get spaced
+skip-string-normalization = false
