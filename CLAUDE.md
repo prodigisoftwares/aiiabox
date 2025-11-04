@@ -131,14 +131,14 @@ This section consolidates all clean code principles used throughout the codebase
 
 **Write comments that explain intent, not implementation:**
 
-- **The Goal:** Code should explain *what* it does; comments should explain *why* it does it
+- **The Goal:** Code should explain _what_ it does; comments should explain _why_ it does it
 - **Bad comments** - Redundant or obvious:
   - `count = count + 1  # Increment count` - The code already says this
   - `user = get_user(id)  # Get the user` - Method name already says this
   - `x = x * 2  # Double x` - Code is self-explanatory
 - **Good comments** - Clarify intent and reasoning:
-  - `# Skip inactive users to avoid sending emails to deleted accounts` - Explains *why*
-  - `# Must process in this order: deletion cascades require parent removal first` - Explains *why* this order
+  - `# Skip inactive users to avoid sending emails to deleted accounts` - Explains _why_
+  - `# Must process in this order: deletion cascades require parent removal first` - Explains _why_ this order
   - `# Cache for 5 minutes to balance freshness with API rate limits` - Trade-off explanation
 - **Comments for clarification, not explanation:**
   - Explain non-obvious algorithms or complex business logic
@@ -150,6 +150,7 @@ This section consolidates all clean code principles used throughout the codebase
   - Don't comment out code (use git history instead)
   - Don't add comments with timestamps or "TODO" without urgency
 - **Comments for warnings and clarifications:**
+
   ```python
   # WARNING: This method is O(n²) - use with small datasets only
   def process_all_pairs(items):
@@ -159,6 +160,7 @@ This section consolidates all clean code principles used throughout the codebase
   if django.VERSION >= (4, 0):
       ...
   ```
+
 - **Use docstrings for public APIs:**
   - Explain what method/function does, its parameters, and return value
   - Document exceptions that might be raised
@@ -175,6 +177,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
   - Side effects: Any state modifications, database changes, or external calls
   - Exceptions: What errors might be raised and when
   - Example:
+
     ```python
     def get_context_data(self, **kwargs) -> dict:
         """
@@ -185,6 +188,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
         Side effects: Filters queryset based on user permissions
         """
     ```
+
 - **Document required parameters:**
   - URL parameters: `slug` must be URL-safe, `page` must be positive integer
   - Query parameters: Valid ranges, default values, required vs optional
@@ -216,6 +220,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
   - Example: Configuration dictionaries, request/response objects
   - Good for: Passing data around, configuration
 - **Bad pattern - Hybrid (Worst of both worlds):**
+
   ```python
   # BAD: Mixes object behavior with exposed internal data
   class User:
@@ -229,7 +234,9 @@ Document what each function, view, or form assumes and guarantees. This prevents
       # But all data is directly accessible and modifiable
       # Breaks encapsulation
   ```
+
 - **Good pattern - Pure object:**
+
   ```python
   # GOOD: Encapsulates behavior, hides implementation
   class User:
@@ -250,6 +257,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
       def get_formatted_name(self):
           return self._name.upper()
   ```
+
 - **Good pattern - Pure data structure:**
   ```python
   # GOOD: Just data, no hidden behavior
@@ -279,6 +287,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
   - Bad: No blank lines between unrelated operations (dense, hard to scan)
   - Good: Blank lines between logical sections (easy to scan and understand)
   - Example:
+
     ```python
     # Bad - all dense together
     user = get_user(id)
@@ -301,6 +310,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
 
     render_template('dashboard', {'user': formatted_user, 'items': formatted_items})
     ```
+
 - **Keep lines reasonably short:** Aim for 80-100 characters max (helps readability on narrow screens)
 - **Indentation consistency:** Follow project standards strictly (Python=4 spaces, HTML/CSS/JS=2 spaces)
 - **Organize class members logically:**
@@ -330,6 +340,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
   - `self.assertIsNone(value)` instead of `self.assertTrue(value is None)`
   - `self.assertRaises(ExceptionType)` instead of try/except in test
 - **Arrange-Act-Assert pattern:**
+
   ```python
   def test_user_can_be_deactivated(self):
       # Arrange: Set up test data
@@ -363,6 +374,7 @@ Document what each function, view, or form assumes and guarantees. This prevents
   - Teams can work on different apps without conflicts
 
 **Implementation practices:**
+
 - Don't import directly from other apps - use public APIs and signals when needed
 - Each app owns its models, views, forms, and templates - don't share model definitions across apps
 - Use Django signals for cross-app communication instead of direct coupling
@@ -468,6 +480,7 @@ Document form behavior and validation contracts:
 - Document assumptions: "assumes user is already authenticated", "assumes POST data is URL-encoded, not multipart"
 - Use docstrings on custom `clean_*` methods explaining the validation rule
 - Example:
+
   ```python
   def clean_email(self) -> str:
       """
@@ -566,6 +579,50 @@ class UserProfile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     # Other business-specific fields
 ```
+
+### Cross-App Model Relationships (Forward References)
+
+**Use string references for ForeignKey/OneToOneField to models in other apps:**
+
+When a model in one app needs to reference a model from another app that doesn't exist yet or is in development, use a string reference instead of importing the model directly. This enables true orthogonal system design and prevents circular import issues.
+
+**Pattern:**
+
+```python
+# In apps/profiles/models/settings.py
+class UserSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Reference to model that will be created in Phase 4
+    default_project = models.ForeignKey(
+        "projects.Project",  # String reference: "app_label.ModelName"
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+```
+
+**Key Points:**
+
+- String format: `"app_label.ModelName"` (matches INSTALLED_APPS name and model name)
+- Example: `"projects.Project"` refers to Project model in projects app
+- The referenced app must be in `INSTALLED_APPS` (can be a stub if needed)
+- Django resolves the reference after all apps are loaded (migrations handle this)
+- No circular import issues - apps don't need to import each other
+- Migrations work correctly with forward references
+
+**Benefits:**
+
+- Apps can be developed independently without tight coupling
+- Reference to future models (Phase 4) from Phase 1 without blocking
+- Clean separation of concerns - Phase 1 models don't depend on Phase 4 implementation
+- If Phase 4 never happens, FK field can be removed in migration without breaking Phase 1
+
+**Example from Project:**
+
+- Phase 1 (profiles): `UserSettings.default_project` references Phase 4 (projects) model
+- Phase 1 migration creates the FK without needing Phase 4 code
+- Phase 4 fully implements Project model when development reaches that phase
+- No changes to Phase 1 models needed - they work as-is
 
 ---
 
@@ -1303,6 +1360,7 @@ For image overlays and interactive galleries, use responsive opacity controls:
   - `self.assertIsNone(value)` instead of `self.assertTrue(value is None)`
   - `self.assertRaises(ExceptionType)` instead of try/except in test
 - **Arrange-Act-Assert pattern:**
+
   ```python
   def test_user_can_be_deactivated(self):
       # Arrange: Set up test data
@@ -1630,6 +1688,7 @@ DB_PASSWORD=<secure-production-password>
   - Bad: No blank lines between unrelated operations (dense, hard to scan)
   - Good: Blank lines between logical sections (easy to scan and understand)
   - Example:
+
     ```python
     # Bad - all dense together
     user = get_user(id)
@@ -1652,6 +1711,7 @@ DB_PASSWORD=<secure-production-password>
 
     render_template('dashboard', {'user': formatted_user, 'items': formatted_items})
     ```
+
 - **Keep lines reasonably short:** Aim for 80-100 characters max (helps readability on narrow screens)
 - **Indentation consistency:** Follow project standards strictly (Python=4 spaces, HTML/CSS/JS=2 spaces)
 - **Organize class members logically:**
@@ -1755,6 +1815,7 @@ When constraints are discovered or blockers appear:
 
 **Example (NOT this):** "We can't refactor that without breaking tests"
 **Example (THIS):** "Refactoring has two viable paths:
+
 - Option A: Refactor incrementally with full test coverage (slower, safer)
 - Option B: Refactor with fallback tests (faster, slightly riskier)
 - Recommendation: Option A because stability is critical here"
@@ -1772,6 +1833,7 @@ Addresses technical debt and design issues proactively:
 - **Commit immediately:** Don't batch fixes - commit each fix with clear messaging
 
 **Benefits:**
+
 - Code quality stays high consistently
 - Prevents "broken window" effect where one bad pattern spreads
 - Keeps codebase maintainable and refactorable
@@ -1863,6 +1925,7 @@ When creating code (functions, classes, templates, components), design them to b
 - Code is self-documenting through consistent patterns
 
 **Implementation Pattern Example:**
+
 ```python
 # Good - flexible and configurable
 class CardComponent:
@@ -2156,7 +2219,6 @@ git log --oneline HEAD..origin/main  # Remote commits not yet pulled
 - Exit codes indicate success (0) or failure (non-zero)
 
 ---
-
 
 ## Key Principles Summary
 
