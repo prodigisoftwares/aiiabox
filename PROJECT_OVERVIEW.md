@@ -12,13 +12,14 @@ The AI chat will allow for:
 
 A chat prompt
 Save chats
-Allow for projects of related chats 
+Allow for projects of related chats
 Chats based on specific defined prompts (similar to GPTs)
 A command line agent
 Ability to generate images based on text to image
 Anything else I can think of ...
 
 ## Tech Stack
+
 - **Frontend**: Alpine.js + HTMX + Tailwind CSS
 - **Backend**: Django + Django REST Framework
 - **Task Queue**: Celery + Redis (for async operations)
@@ -30,69 +31,95 @@ Anything else I can think of ...
 ## Architecture Decisions
 
 ### LLM/Image Generation Processing
+
 **Decision needed before Phase 2:**
+
 - [ ] Option A: Run LLM/SD in same Docker container as Django
 - [ ] Option B: Separate Docker containers (Django, LLM service, SD service)
 - [ ] Option C: External services (LM Studio, separate SD server)
 - [ ] Recommendation: Option B for flexibility and resource management
 
 ### API Authentication Strategy
+
 - Token-based auth (DRF TokenAuthentication)
 - Used by: VSCode plugin, CLI, mobile clients (future)
 - Session-based auth for web interface
 
 ## Phases
 
-### Phase 1: Foundation & Authentication (1 week)
+### Phase 1: Foundation & Authentication (1-2 weeks)
+
 **Goal:** Build user authentication and establish the core UI framework using the existing dockerized dev environment.
 
 **Note:** Django project, PostgreSQL, dev environment, and build pipeline are already provided by the dockerize project. This phase focuses on application-layer setup.
 
 **Deliverables:**
-- [ ] User authentication system (login/signup/logout/password reset)
-- [ ] User profile model (separate from Django User model per CLAUDE.md)
-- [ ] **Settings/Preferences system (foundation for all phases)**
-- [ ] **API authentication (TokenAuthentication for CLI/VSCode)**
-- [ ] Admin interface set up for managing users
+
+- [x] User profile model (separate from Django User model per CLAUDE.md)
+- [x] **Settings/Preferences system (foundation for all phases)**
 - [ ] Base template with responsive navigation (mobile-first)
-- [ ] Basic error handling and 404/500 pages
+- [ ] Login page with Tailwind styling
+- [ ] Logout functionality
+- [ ] Password reset flow (request + confirm pages)
+- [ ] User profile edit page
+- [ ] Settings/preferences edit page
+- [ ] 404 error page
+- [ ] 500 error page
+- [ ] Responsive design testing (mobile/desktop)
 - [ ] Development documentation in `DEVELOPMENT.md` (setup instructions, running locally)
 - [ ] Pre-commit hooks for code formatting (if not already configured)
 
+**Deferred from Phase 1 to Phase 2:**
+
+- [ ] **API authentication (TokenAuthentication for CLI/VSCode)** - Will be implemented in Phase 2 when building API endpoints
+- [ ] **Admin interface setup** - Will be implemented when needed for specific model management in later phases
+
 **Database:**
+
 - `User` (Django default)
 - `UserProfile` model: `user` (OneToOne), `avatar`, `bio`, `preferences` (JSONField)
 - `UserSettings` model: `user` (OneToOne), `theme`, `default_project`, `llm_preferences` (JSONField)
 
 **Key Features:**
-- User registration with email validation
+
+- User registration with email validation (handled by Django's User model)
 - Secure login/logout with session management
-- User profile extensibility for future features
-- Settings system for storing user preferences
-- API token generation for CLI/VSCode
+- Password reset flow (request email, confirm link)
+- User profile editing (avatar, bio, preferences)
+- Settings/preferences editing (theme, default project, LLM preferences)
+- Responsive navigation that works on mobile and desktop
 - Clean, professional UI framework (Tailwind + Alpine.js) ready for feature development
 
 **Testing:**
-- User creation and authentication flows
+
+- User registration and login flows
 - Login/logout functionality
-- API token generation and validation
-- Settings CRUD operations
+- Password reset flow (request + confirmation)
+- Profile editing (avatar, bio, preferences)
+- Settings editing (theme, defaults, LLM preferences)
 - Navigation and responsive design (mobile/desktop)
-- Admin interface functionality
+- 404 and 500 error pages render correctly
+- All forms validate input correctly
 
 **Outcomes:**
-- Users can register and log in securely
-- Navigation framework is solid and reusable
-- Settings system ready for configuration in later phases
-- API authentication ready for CLI/VSCode plugin
+
+- Users can register, log in, and manage their profiles securely
+- Users can customize their settings and preferences
+- Navigation framework is solid and reusable for all authenticated pages
+- Settings system ready for additional configuration in later phases (LLM models, projects, etc.)
 - Foundation ready for chat feature in Phase 2
+- Error handling framework in place for rest of application
 
 ---
 
 ### Phase 2: Chat System - Core (2-3 weeks)
-**Goal:** Build the fundamental chat interface and message storage.
+
+**Goal:** Build the fundamental chat interface and message storage with API authentication for CLI/VSCode.
 
 **Deliverables:**
+
+- [ ] **API authentication setup (TokenAuthentication for CLI/VSCode plugin)**
+- [ ] **Admin interface for managing users and models**
 - [ ] Chat model with message history storage
 - [ ] Django views for chat creation, display, and message management
 - [ ] **DRF API endpoints for chat operations (for future CLI/VSCode integration)**
@@ -107,6 +134,7 @@ Anything else I can think of ...
 - [ ] HTMX for partial page updates (new messages without full reload)
 
 **Key Features:**
+
 - User-owned chats (proper authorization checks)
 - Timestamps on messages
 - Message editing and deletion
@@ -116,10 +144,12 @@ Anything else I can think of ...
 - **Chat duplication/forking**
 
 **Database:**
+
 - `Chat` model: `user` (FK), `title`, `created_at`, `updated_at`, `metadata` (JSONField)
 - `Message` model: `chat` (FK), `user` (FK), `content`, `role` (user/assistant/system), `tokens`, `created_at`
 
 **API Endpoints:**
+
 - `GET /api/chats/` - List user's chats
 - `POST /api/chats/` - Create new chat
 - `GET /api/chats/{id}/` - Get chat detail with messages
@@ -127,6 +157,7 @@ Anything else I can think of ...
 - `DELETE /api/chats/{id}/` - Delete chat
 
 **Testing:**
+
 - Chat CRUD operations
 - Message creation and retrieval
 - Authorization (users can only see their chats)
@@ -135,6 +166,7 @@ Anything else I can think of ...
 - API endpoint functionality
 
 **Outcomes:**
+
 - Users can create chats and exchange messages
 - Message history persists to database
 - API ready for programmatic access
@@ -143,9 +175,11 @@ Anything else I can think of ...
 ---
 
 ### Phase 3: LLM Integration - Basic (2-3 weeks)
+
 **Goal:** Connect to local LLM (llama.cpp or LM Studio API) for chat responses.
 
 **Deliverables:**
+
 - [ ] **Celery + Redis setup for background task processing**
 - [ ] LLM client abstraction (interface to local LLM API)
 - [ ] Configuration for LLM connection (host, port, model settings)
@@ -161,6 +195,7 @@ Anything else I can think of ...
 - [ ] **Connection health checking (is LLM available?)**
 
 **Key Features:**
+
 - Streaming responses from LLM to user (WebSocket or Server-Sent Events)
 - Loading indicators while LLM is processing
 - Connection status checking (is LLM available?)
@@ -173,6 +208,7 @@ Anything else I can think of ...
 - Multiple response generation with temperature variation
 
 **Configuration:**
+
 - LLM endpoint (localhost:1234 for LM Studio, or custom)
 - Model name
 - Temperature, top_p, top_k, max_tokens settings
@@ -181,16 +217,19 @@ Anything else I can think of ...
 - Truncation strategy
 
 **Database Updates:**
+
 - Update `Chat` model: add `system_prompt`, `model_name`, `total_tokens`
 - Update `Message` model: add `tokens`, `generation_time`, `model_config` (JSONField)
 
 **API Endpoints:**
+
 - `POST /api/chats/{id}/generate/` - Generate LLM response
 - `POST /api/chats/{id}/cancel/` - Cancel in-progress generation
 - `GET /api/llm/status/` - Check LLM availability
 - `GET /api/llm/models/` - List available models
 
 **Testing:**
+
 - LLM connection and error handling
 - Message sending and response generation
 - Streaming responses
@@ -200,6 +239,7 @@ Anything else I can think of ...
 - Edge cases (empty prompts, very long messages, etc.)
 
 **Outcomes:**
+
 - Users can have conversations with local LLM
 - Responses are properly stored in chat history
 - LLM is configurable and failures are handled gracefully
@@ -209,9 +249,11 @@ Anything else I can think of ...
 ---
 
 ### Phase 4: Projects & Organization (1-2 weeks)
+
 **Goal:** Allow users to organize related chats into projects.
 
 **Deliverables:**
+
 - [ ] Project model for grouping related chats
 - [ ] Project CRUD views and forms
 - [ ] **DRF API endpoints for project management**
@@ -225,10 +267,12 @@ Anything else I can think of ...
 - [ ] Project archival
 
 **Database:**
+
 - `Project` model: `user` (FK), `name`, `description`, `settings` (JSONField), `is_archived`, `created_at`, `updated_at`
 - Update `Chat` model: add `project` (FK, nullable for unorganized chats)
 
 **Key Features:**
+
 - Visual project organization in sidebar
 - Quick access to recent projects
 - Ability to move chats between projects
@@ -237,6 +281,7 @@ Anything else I can think of ...
 - **Bulk operations (move multiple chats, delete multiple chats)**
 
 **API Endpoints:**
+
 - `GET /api/projects/` - List user's projects
 - `POST /api/projects/` - Create new project
 - `GET /api/projects/{id}/` - Get project detail
@@ -244,6 +289,7 @@ Anything else I can think of ...
 - `PATCH /api/chats/{id}/` - Move chat to different project
 
 **Testing:**
+
 - Project creation and management
 - Chat assignment to projects
 - Proper authorization (users can only see their projects)
@@ -251,6 +297,7 @@ Anything else I can think of ...
 - Bulk operations
 
 **Outcomes:**
+
 - Users can organize chats into logical projects
 - Better navigation for users with many chats
 - Project-level configuration simplifies workflow
@@ -258,9 +305,11 @@ Anything else I can think of ...
 ---
 
 ### Phase 5: Custom Prompts (GPTs-like) (2-3 weeks)
+
 **Goal:** Create user-defined prompt templates for specialized chat contexts.
 
 **Deliverables:**
+
 - [ ] Prompt template model for storing reusable system prompts
 - [ ] CRUD views for managing prompt templates
 - [ ] **DRF API endpoints for template management**
@@ -275,11 +324,13 @@ Anything else I can think of ...
 - [ ] **Community template import (from file or URL)**
 
 **Database:**
+
 - `PromptTemplate` model: `user` (FK), `name`, `description`, `system_prompt`, `parameters` (JSONField), `is_public`, `is_favorite`, `category`, `version`, `created_at`, `updated_at`
 - `TemplateVersion` model: `template` (FK), `version_number`, `system_prompt`, `created_at`
 - Update `Chat` model: add `prompt_template` (FK, nullable), `template_parameters` (JSONField)
 
 **Key Features:**
+
 - Library of curated prompts
 - Custom prompt creation and editing
 - Template variables (e.g., `{{topic}}`, `{{language}}`, `{{tone}}`)
@@ -289,6 +340,7 @@ Anything else I can think of ...
 - Version history for templates
 
 **API Endpoints:**
+
 - `GET /api/templates/` - List templates (user's + public)
 - `POST /api/templates/` - Create new template
 - `GET /api/templates/{id}/` - Get template detail
@@ -296,6 +348,7 @@ Anything else I can think of ...
 - `POST /api/templates/import/` - Import template from JSON
 
 **Testing:**
+
 - Prompt template CRUD
 - Chat creation from templates
 - Parameter replacement
@@ -304,6 +357,7 @@ Anything else I can think of ...
 - Import/export functionality
 
 **Outcomes:**
+
 - Users can leverage pre-built and custom prompts for different tasks
 - Faster chat initiation for common use cases
 - Template sharing enables community-driven improvements
@@ -311,9 +365,11 @@ Anything else I can think of ...
 ---
 
 ### Phase 6: Image Generation (2-3 weeks)
+
 **Goal:** Add text-to-image generation using Stable Diffusion.
 
 **Deliverables:**
+
 - [ ] **Celery task for async image generation**
 - [ ] Image generation model for storing generated images
 - [ ] Image generation view/endpoint (AJAX/Alpine.js integration)
@@ -332,10 +388,12 @@ Anything else I can think of ...
 - [ ] **Model switching UI (switch between SD 1.5, SDXL, FLUX)**
 
 **Database:**
+
 - `GeneratedImage` model: `user` (FK), `prompt`, `negative_prompt`, `image_path`, `thumbnail_path`, `model_name`, `settings` (JSONField), `generation_time`, `status`, `is_favorite`, `created_at`
 - `ImageGenerationJob` model: `user` (FK), `image` (FK, nullable), `status` (pending/running/completed/failed), `progress`, `error_message`, `created_at`, `started_at`, `completed_at`
 
 **Key Features:**
+
 - Integrated image generation in chat (inline) or separate page
 - Queue management for multiple generation requests
 - Real-time progress updates
@@ -348,6 +406,7 @@ Anything else I can think of ...
 - **Upscaling support**
 
 **Frontend:**
+
 - Alpine.js component for image generation form
 - Real-time progress updates (WebSocket or polling)
 - Responsive image gallery with lazy loading
@@ -355,6 +414,7 @@ Anything else I can think of ...
 - Generation settings panel (collapsible)
 
 **API Endpoints:**
+
 - `POST /api/images/generate/` - Start image generation
 - `GET /api/images/` - List user's generated images
 - `GET /api/images/{id}/` - Get image detail
@@ -365,6 +425,7 @@ Anything else I can think of ...
 - `POST /api/sd/models/load/` - Load specific SD model
 
 **Testing:**
+
 - Image generation with various prompts and settings
 - Multiple model support
 - Settings persistence
@@ -376,6 +437,7 @@ Anything else I can think of ...
 - Authorization (users can only access their images)
 
 **Outcomes:**
+
 - Users can generate images within the application
 - Multiple SD model support provides flexibility
 - Images are stored and retrievable for future reference
@@ -384,9 +446,11 @@ Anything else I can think of ...
 ---
 
 ### Phase 7: VSCode Plugin (2-4 weeks)
+
 **Goal:** Create VSCode extension for AI chat integration within the editor.
 
 **Deliverables:**
+
 - [ ] Basic VSCode extension scaffolding (TypeScript)
 - [ ] Extension communicates with local Django backend via API
 - [ ] **API client with authentication (token-based)**
@@ -404,6 +468,7 @@ Anything else I can think of ...
 - [ ] **Extension update mechanism**
 
 **Key Features:**
+
 - Chat panel in VSCode sidebar
 - Send code context to LLM for analysis/review/explanation
 - Insert responses directly into editor at cursor position
@@ -415,6 +480,7 @@ Anything else I can think of ...
 - **Quick actions (explain, fix, optimize, test)**
 
 **Configuration (VSCode settings.json):**
+
 - Backend URL (default: http://localhost:8000)
 - API token
 - Model preferences
@@ -422,6 +488,7 @@ Anything else I can think of ...
 - Auto-send file context
 
 **Commands:**
+
 - `aiia.chat` - Open chat sidebar
 - `aiia.askSelection` - Ask about selected code
 - `aiia.explainCode` - Explain selected code
@@ -430,6 +497,7 @@ Anything else I can think of ...
 - `aiia.insertAtCursor` - Insert LLM response at cursor
 
 **Testing:**
+
 - Extension loads correctly in VSCode
 - API authentication works
 - Chat communication functions properly
@@ -440,6 +508,7 @@ Anything else I can think of ...
 - Webview renders properly
 
 **Outcomes:**
+
 - Developers can use AI chat without leaving VSCode
 - Faster workflow integration for coding tasks
 - Context-aware suggestions improve code quality
@@ -447,9 +516,11 @@ Anything else I can think of ...
 ---
 
 ### Phase 8: CLI Agent (2-3 weeks)
+
 **Goal:** Create command-line interface for AI interactions.
 
 **Deliverables:**
+
 - [ ] CLI application using `typer` (modern, type-safe)
 - [ ] Connect to local Django API
 - [ ] **Configuration management (config file in ~/.aiia/config.yaml)**
@@ -466,6 +537,7 @@ Anything else I can think of ...
 - [ ] **Rich terminal UI (colors, progress bars, tables)**
 
 **Commands:**
+
 ```bash
 # Chat
 aiia chat                          # Start interactive chat in current project
@@ -505,6 +577,7 @@ aiia models                        # List available models
 ```
 
 **Key Features:**
+
 - Interactive REPL chat mode with history
 - Streaming responses in terminal (character-by-character)
 - Color-coded output (syntax highlighting for code)
@@ -516,15 +589,16 @@ aiia models                        # List available models
 - **Autocomplete for commands and options**
 
 **Configuration (~/.aiia/config.yaml):**
+
 ```yaml
 api:
   url: http://localhost:8000
   token: your_token_here
-  
+
 default:
   project: MyProject
   model: llama-2-70b
-  
+
 display:
   colors: true
   markdown: true
@@ -532,6 +606,7 @@ display:
 ```
 
 **Testing:**
+
 - All CLI commands work correctly
 - Configuration persists and loads correctly
 - Error handling for missing backend or invalid tokens
@@ -540,6 +615,7 @@ display:
 - Interactive mode functions properly
 
 **Outcomes:**
+
 - Power users can interact with AI from terminal
 - Better integration into development workflows
 - Scriptable AI interactions for automation
@@ -547,9 +623,11 @@ display:
 ---
 
 ### Phase 9: Polish & Optimization (1-2 weeks)
+
 **Goal:** Refine the application, improve performance, and fix UX issues.
 
 **Deliverables:**
+
 - [ ] Performance optimization (database queries, image loading, LLM calls)
 - [ ] Frontend optimization (lazy loading, code splitting, asset caching)
 - [ ] Mobile responsiveness testing across devices
@@ -567,6 +645,7 @@ display:
 - [ ] **Security hardening (CSP, CORS, rate limiting)**
 
 **Key Areas:**
+
 - Database query optimization:
   - `select_related()` for foreign keys
   - `prefetch_related()` for many-to-many
@@ -587,12 +666,14 @@ display:
 - Toast notifications for user feedback (success, error, info)
 
 **Performance Targets:**
+
 - Page load time < 2s
 - LLM first token < 1s
 - Image generation start < 500ms
 - Chat history load < 500ms
 
 **Testing:**
+
 - Performance benchmarks (load times, LLM response times, image generation)
 - Cross-browser testing (Firefox, Chrome, Safari, Edge)
 - Mobile testing (iOS Safari, Android Chrome)
@@ -601,6 +682,7 @@ display:
 - Security testing (SQL injection, XSS, CSRF)
 
 **Outcomes:**
+
 - Polished, professional application
 - Good performance across devices
 - Accessible to all users
@@ -610,9 +692,11 @@ display:
 ---
 
 ### Phase 10: Advanced Features & Future (3+ weeks)
+
 **Goal:** Enhance with advanced capabilities and improve reliability.
 
 **Deliverables:**
+
 - [ ] **Advanced chat search with filters (date, project, model, keywords)**
 - [ ] Export chats (PDF, Markdown, JSON, HTML)
 - [ ] **Chat sharing (generate shareable links with expiration)**
@@ -635,6 +719,7 @@ display:
 - [ ] **Plugin system (allow extensions to add features)**
 
 **Optional Enhancements:**
+
 - Fine-tuning support for custom models
 - Prompt optimization suggestions (analyze and improve prompts)
 - Image variation generation (generate similar images)
@@ -648,6 +733,7 @@ display:
 - **Collaborative chats (share chat with other users)**
 
 **Testing:**
+
 - Full integration tests across features
 - Load and stress testing (100+ concurrent users)
 - Security testing (OWASP Top 10)
@@ -655,6 +741,7 @@ display:
 - API stability testing
 
 **Outcomes:**
+
 - Feature-complete AI platform
 - Production-ready reliability
 - Extensible architecture for future features
@@ -665,12 +752,14 @@ display:
 ## Implementation Notes
 
 ### Parallel Work Opportunities
+
 - **Phase 3 + Phase 4:** Project structure can be built while LLM integration is being finalized
 - **Phase 6:** Image generation can be developed independently after Phase 3 (Celery setup)
 - **Phase 7 + Phase 8:** VSCode plugin and CLI can be developed in parallel once Phase 3 API is stable
 - **Phase 9:** Polish can start earlier as a continuous effort across all phases
 
 ### Priority Order
+
 1. **Phase 1:** Must complete first (foundation) - **CRITICAL PATH**
 2. **Phase 2-3:** Core functionality (chat + LLM) - **HIGHEST PRIORITY**
 3. **Phase 4-5:** Organization and customization - **MEDIUM PRIORITY**
@@ -679,6 +768,7 @@ display:
 6. **Phase 9-10:** Polish and advanced features - **ITERATIVE** (ongoing improvements)
 
 ### Critical Dependencies
+
 ```
 Phase 1 (Auth + Settings)
   ↓
@@ -698,6 +788,7 @@ Phase 10 (Advanced Features)
 ```
 
 ### Risk Mitigation
+
 - **Test LLM integration (Phase 3) EARLY** - If API integration is problematic, it affects downstream phases
 - **Spike Celery setup** in Phase 3 - This is critical for Phase 6 (image generation)
 - **Test Image generation (Phase 6) early** - Stable Diffusion setup can be tricky (CUDA, VRAM, model loading)
@@ -706,10 +797,10 @@ Phase 10 (Advanced Features)
 - **Performance testing should start in Phase 3** - Don't wait until Phase 9 to discover bottlenecks
 
 ### Architecture Decisions to Make Early
+
 1. **LLM/SD Processing Location** (before Phase 2):
    - Same container vs. separate services
    - Affects resource allocation and Docker compose setup
-   
 2. **WebSocket vs. SSE** for streaming (Phase 3):
    - WebSocket: bidirectional, more complex
    - SSE: simpler, sufficient for streaming responses
@@ -727,6 +818,7 @@ Phase 10 (Advanced Features)
    - Recommendation: Celery for production-grade reliability
 
 ### Definition of Done for Each Phase
+
 - [ ] All deliverables complete and tested
 - [ ] Unit tests pass (>80% coverage for critical paths)
 - [ ] Integration tests pass
@@ -748,6 +840,7 @@ Phase 10 (Advanced Features)
 - [ ] Demo/showcase prepared (optional but helpful)
 
 ### Estimated Timeline
+
 - **Phase 1:** 1 week (40 hours)
 - **Phase 2:** 2-3 weeks (80-120 hours)
 - **Phase 3:** 2-3 weeks (80-120 hours)
@@ -765,7 +858,9 @@ Phase 10 (Advanced Features)
 **Note:** These are solo developer estimates. Actual time will vary based on experience, interruptions, and scope changes.
 
 ### Technology Learning Curve
+
 If unfamiliar with:
+
 - **Alpine.js + HTMX:** +1 week (easy to learn)
 - **Celery:** +1 week (moderate complexity)
 - **Stable Diffusion/diffusers:** +2 weeks (complex, requires ML knowledge)
@@ -773,6 +868,7 @@ If unfamiliar with:
 - **WebSockets/SSE:** +1 week (moderate complexity)
 
 ### Recommended Development Flow
+
 1. **Build vertically, not horizontally** - Complete one feature end-to-end before moving to the next
 2. **Test continuously** - Don't wait until Phase 9 to start testing
 3. **Document as you go** - Future you will thank present you
@@ -782,6 +878,7 @@ If unfamiliar with:
 7. **Deploy early and often** - Even to local Docker, catch deployment issues early
 
 ### Success Metrics
+
 - **Phase 1-3:** Can have a working conversation with LLM
 - **Phase 4-5:** Can organize work efficiently with projects and templates
 - **Phase 6:** Can generate images without leaving the app
@@ -790,7 +887,9 @@ If unfamiliar with:
 - **Phase 10:** App has advanced features that make it indispensable
 
 ### When to Consider "Done"
+
 The project is "done" when:
+
 1. You're using it daily for real work
 2. It solves your original problem (better than existing tools)
 3. Adding more features would be nice-to-have, not need-to-have
