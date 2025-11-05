@@ -1,0 +1,190 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Edit Profile" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="flex-1 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+      {# Page title #}
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-50">
+          {% trans "Edit Profile" %}
+        </h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">
+          {% trans "Update your profile information and avatar." %}
+        </p>
+      </div>
+
+      {# Account info (read-only) #}
+      <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
+          {% trans "Account Information" %}
+        </h2>
+        <div class="space-y-3">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+              {% trans "Username" %}
+            </p>
+            <p class="mt-1 text-gray-900 dark:text-gray-50">
+              {{ user.username }}
+            </p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+              {% trans "Email" %}
+            </p>
+            <p class="mt-1 text-gray-900 dark:text-gray-50">
+              {{ user.email }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {# Profile edit form #}
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        {# Form non-field errors #}
+        {% if form.non_field_errors %}
+          <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+            <p class="text-sm font-medium text-red-800 dark:text-red-200">
+              {% trans "Please correct the following errors:" %}
+            </p>
+            <ul class="mt-2 list-disc list-inside space-y-1">
+              {% for error in form.non_field_errors %}
+                <li class="text-sm text-red-700 dark:text-red-300">
+                  {{ error }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {# Avatar field #}
+        <div>
+          <label for="{{ form.avatar.id_for_label }}"
+                 class="block text-sm font-medium text-gray-900 dark:text-gray-50 mb-2">
+            {% trans "Avatar" %}
+          </label>
+
+          {# Current avatar preview #}
+          {% if object.avatar %}
+            <div class="mb-4">
+              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                {% trans "Current avatar:" %}
+              </p>
+              <img src="{{ object.avatar.url }}"
+                   alt="{% trans "Current profile avatar" %}"
+                   class="w-24 h-24 rounded-lg object-cover border border-gray-300 dark:border-gray-600" />
+            </div>
+          {% endif %}
+
+          {# Avatar input #}
+          <div class="relative">
+            {{ form.avatar }}
+            {% if form.avatar.errors %}
+              <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+                {% for error in form.avatar.errors %}
+                  {{ error }}
+                  {% if not forloop.last %}
+                    <br />
+                  {% endif %}
+                {% endfor %}
+              </p>
+            {% endif %}
+          </div>
+
+          {# Avatar preview on selection (JavaScript) #}
+          <div id="avatar-preview-container" class="mt-4 hidden">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              {% trans "New avatar preview:" %}
+            </p>
+            <img id="avatar-preview"
+                 class="w-24 h-24 rounded-lg object-cover border border-gray-300 dark:border-gray-600"
+                 alt="{% trans "Avatar preview" %}" />
+          </div>
+        </div>
+
+        {# Bio field #}
+        <div>
+          <label for="{{ form.bio.id_for_label }}"
+                 class="block text-sm font-medium text-gray-900 dark:text-gray-50 mb-2">
+            {% trans "Bio" %}
+          </label>
+          {{ form.bio }}
+          {% if form.bio.errors %}
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+              {% for error in form.bio.errors %}
+                {{ error }}
+                {% if not forloop.last %}
+                  <br />
+                {% endif %}
+              {% endfor %}
+            </p>
+          {% endif %}
+          <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+            {% trans "Tell us about yourself. This information will be visible in your profile." %}
+          </p>
+        </div>
+
+        {# Form actions #}
+        <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button type="submit"
+                  class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+                  "
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-blue-500
+                  focus:ring-offset-2
+                  "
+                  "
+                  dark:focus:ring-offset-gray-900
+                  transition-colors
+                  ">
+            {% trans "Save Changes" %}
+          </button>
+          <a href="{% url 'profiles:profile_detail' %}"
+             class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50 font-medium rounded-lg"
+             "
+             hover:bg-gray-300
+             dark:hover:bg-gray-600
+             focus:outline-none
+             focus:ring-2
+             focus:ring-gray-400
+             "
+             "
+             focus:ring-offset-2
+             dark:focus:ring-offset-gray-900
+             transition-colors
+             ">
+            {% trans "Cancel" %}
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {# Avatar preview script #}
+  <script>
+    const avatarInput = document.getElementById('{{ form.avatar.id_for_label }}');
+    const previewContainer = document.getElementById('avatar-preview-container');
+    const previewImg = document.getElementById('avatar-preview');
+
+    avatarInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          previewImg.src = event.target.result;
+          previewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewContainer.classList.add('hidden');
+      }
+    });
+  </script>
+{% endblock content %}
