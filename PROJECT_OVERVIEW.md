@@ -6,6 +6,22 @@ Goal: Personal full-stack web application for AI chat and image generation with 
 
 Reason: Almost every RAG app out there completely fucking sucks and is extremely unreliable or too difficult for the average person to set up.
 
+## Design Philosophy
+
+**Minimal & Functional, Not Corporate:**
+
+- No fancy marketing-style designs, gradients, or unnecessary animations
+- Clean, straightforward interface inspired by Open WebUI (proven, functional design)
+- Every UI element serves a purpose - no fluff or bloat
+- Functionality first, polish second
+- Sidebar-based navigation for desktop (proven app pattern)
+- Dark mode support built-in from the start
+- Mobile-first responsive design approach
+- Progressive enhancement (works without JavaScript, enhanced with JS)
+- No duplicate UI elements or redundant buttons
+- Clean typography and spacing using Tailwind CSS
+- Minimal, smooth transitions (200-300ms) only where they add value
+
 I am using my own dockerize project to build the starting dev environment. So that will not need to be set up.
 
 The AI chat will allow for:
@@ -57,16 +73,16 @@ Anything else I can think of ...
 
 - [x] User profile model (separate from Django User model per CLAUDE.md)
 - [x] **Settings/Preferences system (foundation for all phases)**
-- [ ] Base template with responsive navigation (mobile-first)
+- [x] Base template with responsive navigation (mobile-first) - **Issue #5 Complete**
+- [x] 404 error page - **Issue #5 Complete**
+- [x] 500 error page - **Issue #5 Complete**
 - [ ] Login page with Tailwind styling
 - [ ] Logout functionality
 - [ ] Password reset flow (request + confirm pages)
 - [ ] User profile edit page
 - [ ] Settings/preferences edit page
-- [ ] 404 error page
-- [ ] 500 error page
 - [ ] Responsive design testing (mobile/desktop)
-- [ ] Development documentation in `DEVELOPMENT.md` (setup instructions, running locally)
+- [x] Development documentation in `DEVELOPMENT.md` - **Issue #5 Complete**
 - [ ] Pre-commit hooks for code formatting (if not already configured)
 
 **Deferred from Phase 1 to Phase 2:**
@@ -88,7 +104,10 @@ Anything else I can think of ...
 - User profile editing (avatar, bio, preferences)
 - Settings/preferences editing (theme, default project, LLM preferences)
 - Responsive navigation that works on mobile and desktop
-- Clean, professional UI framework (Tailwind + Alpine.js) ready for feature development
+- **Minimal, functional UI framework (Tailwind + Alpine.js)** - clean sidebar navigation, no unnecessary complexity
+- **Open WebUI-inspired design** - proven, user-friendly interface pattern
+- **Dark mode support** built-in from day one
+- **No duplicate UI elements** - centralized authentication, no redundant buttons
 
 **Testing:**
 
