@@ -9,12 +9,13 @@
       {% endblock title %}
     </title>
 
-    {# Tailwind CSS #}
-    <script src="https://cdn.tailwindcss.com"></script>
+    {% load static %}
 
-    {# Alpine.js #}
-    <script defer
-            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {# Tailwind CSS - Compiled locally #}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    {# Alpine.js - Local static asset #}
+    <script defer src="{% static 'js/alpine.min.js' %}"></script>
 
     <style>
         body {
@@ -27,14 +28,37 @@
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 200ms;
         }
+
+        /* Hamburger Menu Animation */
+        .hamburger-line {
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+        }
+
+        button.hamburger-open .hamburger-top {
+            transform: rotate(45deg) translateY(8px);
+        }
+
+        button.hamburger-open .hamburger-middle {
+            opacity: 0;
+        }
+
+        button.hamburger-open .hamburger-bottom {
+            transform: rotate(-45deg) translateY(-8px);
+        }
     </style>
 
     {% block extra_css %}
     {% endblock extra_css %}
   </head>
 
-  <body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-50">
-    <div class="flex h-screen overflow-hidden">
+  <body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-50 flex flex-col h-screen"
+        x-data="{ mobileMenuOpen: false, userDropdownOpen: false }"
+        @keydown.escape.window="mobileMenuOpen = false; userDropdownOpen = false">
+    {# Top Navigation #}
+    {% include "core/includes/navigation/_top_nav.html" %}
+
+    <div class="flex flex-1 overflow-hidden">
       {# Sidebar Navigation #}
       {% include "core/includes/_sidebar.html" %}
 
