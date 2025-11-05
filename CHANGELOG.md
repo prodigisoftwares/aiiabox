@@ -9,6 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Phase 1: Foundation & Authentication
 
+#### Issue #8: Error Pages (404 & 500)
+
+**Added**
+
+- Custom 404 error page handler in `apps/core/views.py`
+  - `handler_404(request, exception=None)` function
+  - Renders `core/errors/404.html` template
+  - Returns proper 404 HTTP status code
+  - Displays user-friendly message with navigation options
+  - Shows "Dashboard" link for authenticated users
+- Custom 500 error page handler in `apps/core/views.py`
+  - `handler_500(request)` function
+  - Renders `core/errors/500.html` template
+  - Returns proper 500 HTTP status code
+  - Displays user-friendly error message with navigation options
+  - Shows "Dashboard" link for authenticated users
+- Error handler registration in `aiiabox/config/urls.py`
+  - Imported `handler_404` and `handler_500` from `apps.core.views`
+  - Set as Django error handlers: `handler404` and `handler500`
+  - Ensures custom error pages render instead of default Django pages
+
+**Updated**
+
+- `aiiabox/config/settings.py`
+  - Added `"127.0.0.1"` to `ALLOWED_HOSTS` for localhost testing
+  - Added `"testserver"` to `ALLOWED_HOSTS` for test environment support
+- `apps/core/tests/test_views.py`
+  - Added `test_404_handler_renders_custom_template()` test
+    - Verifies custom 404 handler renders correct template
+    - Confirms 404 status code
+    - Validates error message and navigation links display
+  - Added `test_500_handler_renders_custom_template()` test
+    - Verifies custom 500 handler renders correct template
+    - Confirms 500 status code
+    - Validates error message and navigation links display
+
+**Note**
+
+- Error templates (`404.html`, `500.html`) were already created in previous work
+- Templates extend `base.html` for consistent navigation and styling
+- Both templates use Tailwind CSS for professional appearance
+- Both templates are responsive and mobile-friendly
+- Tests confirm all error pages render correctly with proper content
+
 #### Issue #13: Settings/Preferences Edit Page
 
 **Added**

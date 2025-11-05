@@ -1,4 +1,6 @@
 from django.contrib.auth.views import LoginView, LogoutView
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 
 from .forms import CustomAuthenticationForm
@@ -36,3 +38,23 @@ class CustomLogoutView(LogoutView):
     """
 
     next_page = "core:home"
+
+
+def handler_404(request, exception=None):
+    """
+    Handle 404 Page Not Found errors.
+
+    Renders custom 404 error page with helpful navigation.
+    """
+    html = render_to_string("core/errors/404.html", request=request)
+    return HttpResponse(html, status=404)
+
+
+def handler_500(request):
+    """
+    Handle 500 Internal Server errors.
+
+    Renders custom 500 error page with helpful navigation.
+    """
+    html = render_to_string("core/errors/500.html", request=request)
+    return HttpResponse(html, status=500)
