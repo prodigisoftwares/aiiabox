@@ -1,0 +1,23 @@
+{% comment %}
+Mobile Menu Toggle Button
+
+Hamburger menu button for mobile navigation.
+Requires Alpine.js scope with mobileMenuOpen state.
+
+Parameters:
+- user: Django user object (available in context)
+{% endcomment %}
+
+{% if user.is_authenticated %}
+  <button @click="mobileMenuOpen = !mobileMenuOpen"
+          class="inline-flex items-center justify-center p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-smooth"
+          aria-label="Toggle mobile menu"
+          aria-expanded="false">
+    <div class="w-6 h-5 flex flex-col justify-between"
+         :class="{ 'hamburger-open': mobileMenuOpen }">
+      <span class="hamburger-line hamburger-top h-0.5 w-full bg-gray-900" />
+      <span class="hamburger-line hamburger-middle h-0.5 w-full bg-gray-900" />
+      <span class="hamburger-line hamburger-bottom h-0.5 w-full bg-gray-900" />
+    </div>
+  </button>
+{% endif %}

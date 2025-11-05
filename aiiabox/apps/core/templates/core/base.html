@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}
+        AI Platform
+      {% endblock title %}
+    </title>
+
+    {# Tailwind CSS #}
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {# Alpine.js #}
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .transition-smooth {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+        }
+    </style>
+
+    {% block extra_css %}
+    {% endblock extra_css %}
+  </head>
+
+  <body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      {# Sidebar Navigation #}
+      {% include "core/includes/_sidebar.html" %}
+
+      {# Main Content Area #}
+      <main class="flex-1 overflow-auto">
+        {% block content %}
+        {% endblock content %}
+      </main>
+    </div>
+
+    {% block extra_js %}
+    {% endblock extra_js %}
+  </body>
+</html>

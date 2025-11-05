@@ -1,0 +1,42 @@
+{% comment %}
+Mobile Navigation Menu
+
+Slide-down mobile navigation menu.
+Requires Alpine.js scope with mobileMenuOpen state.
+
+Parameters: None
+{% endcomment %}
+
+<div x-show="mobileMenuOpen"
+     @click.away="mobileMenuOpen = false"
+     x-transition:enter="transition-smooth"
+     x-transition:enter-start="opacity-0 transform -translate-y-2"
+     x-transition:enter-end="opacity-100 transform translate-y-0"
+     x-transition:leave="transition-smooth-300"
+     x-transition:leave-start="opacity-100 transform translate-y-0"
+     x-transition:leave-end="opacity-0 transform -translate-y-2"
+     class="sm:hidden bg-white border-t border-gray-200">
+  <div class="px-2 pt-2 pb-3 space-y-1">
+    <a href="/dashboard"
+       class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-smooth font-medium">
+      Dashboard
+    </a>
+
+    <a href="/profile"
+       class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-smooth font-medium">
+      Profile
+    </a>
+
+    <a href="/settings"
+       class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-smooth font-medium">
+      Settings
+    </a>
+
+    <hr class="my-2" />
+
+    <a href="/logout"
+       class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-smooth font-medium">
+      Logout
+    </a>
+  </div>
+</div>

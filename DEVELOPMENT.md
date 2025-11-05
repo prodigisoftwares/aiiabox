@@ -62,6 +62,190 @@ Technical implementation details and guidelines for developing on this project.
   - `name` (CharField) - Project name
 - **Note:** This stub exists to support the FK reference in UserSettings.default_project
 
+## Base Template & Navigation (Issue #5)
+
+### Core App Structure
+
+The `apps.core` app provides shared UI components and foundational templates for the entire application.
+
+```
+apps/core/
+├── templates/core/
+│   ├── base.html                    # Main base template with sidebar layout
+│   ├── home.html                    # Home/landing page
+│   ├── includes/
+│   │   └── _sidebar.html            # Minimal sidebar navigation component
+│   └── errors/
+│       ├── 404.html                 # Page not found error template
+│       └── 500.html                 # Server error template
+├── tests/
+│   ├── __init__.py
+│   └── test_views.py                # View and template rendering tests
+├── urls.py                          # Core app URL routing
+├── views.py                         # HomeView
+├── models.py                        # Empty (core app has no models)
+├── admin.py                         # Empty
+└── apps.py                          # App configuration
+```
+
+### Base Template (`base.html`)
+
+Minimal sidebar-based layout inspired by Open WebUI.
+
+**Features:**
+
+- Clean, minimal design focused on functionality
+- Tailwind CSS via CDN
+- Alpine.js for interactive components
+- Two-column layout: sidebar + main content area
+- Dark mode ready with `dark:` Tailwind classes
+- Full-height layout (h-screen)
+
+**Blocks for Extension:**
+
+```django
+{% block title %}     {# Page title in browser tab #}
+{% block content %}   {# Main page content #}
+{% block extra_css %} {# Page-specific CSS #}
+{% block extra_js %}  {# Page-specific JavaScript #}
+```
+
+**Usage - Extending Base Template:**
+
+```django
+{% extends "core/base.html" %}
+
+{% block title %}Page Title{% endblock title %}
+
+{% block content %}
+  <div class="p-8">
+    {# Your content here #}
+  </div>
+{% endblock content %}
+```
+
+### Sidebar Navigation Component (`_sidebar.html`)
+
+Minimal, functional sidebar navigation (Open WebUI style).
+
+**Features:**
+
+- Fixed-width sidebar (w-64)
+- Clean borders and minimal styling
+- Shows authenticated user menu: Dashboard, Chats, Images, Profile, Settings, Logout
+- Shows unauthenticated user menu: Sign In only
+- Hover states for interactive feedback
+- Dark mode support via `dark:` classes
+- Simple, functional design - no fancy animations
+
+**Layout:**
+
+```
+Sidebar (w-64)
+├── Header with logo/brand
+├── Navigation Links (flex-1 to fill space)
+│   ├── Dashboard
+│   ├── Chats
+│   ├── Images
+│   └── [More links as needed]
+└── User Menu (at bottom)
+    ├── Profile
+    ├── Settings
+    └── Logout
+```
+
+**Customization:**
+
+To add new navigation links, edit:
+
+```
+apps/core/templates/core/includes/_sidebar.html
+```
+
+Simply add more `<a>` tags in the navigation section with the same styling:
+
+```django
+<a href="/path" class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth">
+  Link Text
+</a>
+```
+
+### Error Pages
+
+#### 404 Page (`errors/404.html`)
+
+- Extends base template for consistent styling and sidebar
+- Shows "Page Not Found" with helpful message
+- Links to home and dashboard (for authenticated users)
+- Maintains sidebar navigation context
+
+#### 500 Page (`errors/500.html`)
+
+- Extends base template for consistent styling and sidebar
+- Shows "Server Error" with helpful message
+- Links to home and dashboard (for authenticated users)
+- Maintains sidebar navigation context
+
+### Home Page (`home.html`)
+
+Minimal landing/home page that extends `base.html`.
+
+**Features:**
+
+- Simple welcome message for unauthenticated users (Sign In link available in sidebar)
+- For authenticated users: welcome message with link to dashboard
+- No fancy cards or complex layouts - just clean, functional
+- No duplicate buttons - authentication links centralized in sidebar
+
+### Testing
+
+View rendering tests verify:
+
+- Base template renders without errors
+- Sidebar navigation is included
+- Anonymous users see login/register links
+- Authenticated users see dashboard and settings
+- 404 pages return correct status code
+
+Run tests:
+
+```bash
+poetry run python manage.py test apps.core.tests.test_views
+```
+
+### CSS Classes & Utilities
+
+**Transition Classes:**
+
+- `.transition-smooth` - 200ms smooth transition for all properties
+
+**Tailwind Responsive Prefixes:**
+
+- `dark:` - Dark mode styles
+
+**Dark Mode:**
+
+Body uses `dark:` prefixes for dark mode support:
+
+- `dark:bg-gray-950` - Sidebar background
+- `dark:border-gray-800` - Borders
+- `dark:hover:bg-gray-800` - Hover states
+- `dark:text-gray-50` - Text
+
+### Frontend Asset Configuration
+
+**Current Setup:**
+
+- Tailwind CSS: Loaded via Tailwind CDN (includes JIT compiler)
+- Alpine.js: Loaded via jsDelivr CDN v3
+- No external CSS frameworks or bloat
+
+**Production Optimization:**
+
+- Move Tailwind build to npm pipeline for better tree-shaking
+- Pre-compile CSS to reduce initial load
+- Store Alpine.js locally in static/js/
+
 ## App Structure
 
 ### profiles App
