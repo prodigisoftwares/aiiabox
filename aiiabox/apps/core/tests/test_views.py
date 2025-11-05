@@ -53,3 +53,31 @@ class ErrorPageTests(TestCase):
         """Verify 404 responses are returned for nonexistent pages."""
         response = self.client.get("/nonexistent-page/")
         self.assertEqual(response.status_code, 404)
+
+    def test_404_handler_renders_custom_template(self):
+        """Verify custom 404 error handler renders the error template."""
+        from django.http import HttpRequest
+
+        from apps.core.views import handler_404
+
+        request = HttpRequest()
+        response = handler_404(request)
+        self.assertEqual(response.status_code, 404)
+        content = response.content.decode()
+        self.assertIn("404", content)
+        self.assertIn("Page Not Found", content)
+        self.assertIn("Go Home", content)
+
+    def test_500_handler_renders_custom_template(self):
+        """Verify custom 500 error handler renders the error template."""
+        from django.http import HttpRequest
+
+        from apps.core.views import handler_500
+
+        request = HttpRequest()
+        response = handler_500(request)
+        self.assertEqual(response.status_code, 500)
+        content = response.content.decode()
+        self.assertIn("500", content)
+        self.assertIn("Server Error", content)
+        self.assertIn("Go Home", content)

@@ -74,8 +74,8 @@ Anything else I can think of ...
 - [x] User profile model (separate from Django User model per CLAUDE.md)
 - [x] **Settings/Preferences system (foundation for all phases)**
 - [x] Base template with responsive navigation (mobile-first) - **Issue #5 Complete**
-- [x] 404 error page - **Issue #5 Complete**
-- [x] 500 error page - **Issue #5 Complete**
+- [x] 404 error page - **Issue #8 Complete**
+- [x] 500 error page - **Issue #8 Complete**
 - [ ] Login page with Tailwind styling - **Issue #6**
 - [ ] Logout functionality - **Issue #6**
 - [ ] ~~Password reset flow~~ - **Deferred** (admin console sufficient for single user)
