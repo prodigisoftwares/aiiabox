@@ -8,102 +8,11 @@
 {% block content %}
   <div class="flex-1 p-4 sm:p-6 lg:p-8">
     <div class="max-w-2xl mx-auto">
-      {# Page header #}
-      <div class="flex items-start justify-between mb-8">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-50">
-            {% trans "Profile" %}
-          </h1>
-          <p class="mt-2 text-gray-600 dark:text-gray-400">
-            {% trans "View and manage your profile information." %}
-          </p>
-        </div>
-        <a href="{% url 'profiles:profile_edit' %}"
-           class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
-           "
-           focus:outline-none
-           focus:ring-2
-           focus:ring-blue-500
-           focus:ring-offset-2
-           "
-           "
-           dark:focus:ring-offset-gray-900
-           transition-colors
-           ">
-          {% trans "Edit Profile" %}
-        </a>
-      </div>
-
-      {# Avatar section #}
-      {% if profile.avatar %}
-        <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-          <img src="{{ profile.avatar.url }}"
-               alt="{% trans "Profile avatar" %}"
-               class="w-32 h-32 mx-auto rounded-lg object-cover border-2 border-gray-300 dark:border-gray-600" />
-        </div>
-      {% endif %}
-
-      {# Account information #}
-      <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
-          {% trans "Account Information" %}
-        </h2>
-        <div class="space-y-4">
-          <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {% trans "Username" %}
-            </p>
-            <p class="mt-1 text-gray-900 dark:text-gray-50 font-medium">
-              {{ user.username }}
-            </p>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {% trans "Email" %}
-            </p>
-            <p class="mt-1 text-gray-900 dark:text-gray-50 font-medium">
-              {{ user.email }}
-            </p>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {% trans "Member Since" %}
-            </p>
-            <p class="mt-1 text-gray-900 dark:text-gray-50 font-medium">
-              {{ user.date_joined|date:"F d, Y" }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {# Bio section #}
-      {% if profile.bio %}
-        <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
-            {% trans "Bio" %}
-          </h2>
-          <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-            {{ profile.bio }}
-          </p>
-        </div>
-      {% else %}
-        <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p class="text-gray-600 dark:text-gray-400 italic">
-            {% trans "No bio added yet." %}
-            <a href="{% url 'profiles:profile_edit' %}"
-               class="text-blue-600 dark:text-blue-400 hover:underline">
-              {% trans "Add one now." %}
-            </a>
-          </p>
-        </div>
-      {% endif %}
-
-      {# Profile last updated #}
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        {% blocktrans with date=profile.updated_at|date:"F d, Y \a\t g:i A" %}
-          Profile last updated: {{ date }}
-        {% endblocktrans %}
-      </div>
+      {% include "profiles/includes/header/_page_header.html" %}
+      {% include "profiles/includes/sections/_avatar_section.html" %}
+      {% include "profiles/includes/sections/_account_info_section.html" %}
+      {% include "profiles/includes/sections/_bio_section.html" %}
+      {% include "profiles/includes/footer/_profile_footer.html" %}
     </div>
   </div>
 {% endblock content %}
