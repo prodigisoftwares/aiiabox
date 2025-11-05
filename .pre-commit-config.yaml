@@ -1,90 +1,90 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.2.0
-  hooks:
-  - id: check-added-large-files
-    args: ['--maxkb=10000']
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=10000"]
 
-- repo: https://github.com/pycqa/isort
-  rev: 5.13.2
-  hooks:
-    - id: isort
-      name: isort
-      verbose: true
-      fail_fast: true
-      args: ["--profile", "black"]
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort
+        verbose: true
+        fail_fast: true
+        args: ["--profile", "black"]
 
-- repo: https://github.com/psf/black
-  rev: 25.1.0
-  hooks:
-    - id: black
-      language_version: python3.12
-      fail_fast: true
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3.12
+        fail_fast: true
 
-- repo: https://github.com/Riverside-Healthcare/djLint
-  rev: v1.36.4
-  hooks:
-    - id: djlint-reformat-django
-      fail_fast: true
-      args: [--reformat]
-    - id: djlint-django
-      fail_fast: true
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint-reformat-django
+        fail_fast: true
+        args: [--reformat]
+      - id: djlint-django
+        fail_fast: true
 
-- repo: https://github.com/pre-commit/mirrors-prettier
-  rev: v4.0.0-alpha.8
-  hooks:
-    - id: prettier
-      files: \.(js|ts|jsx|tsx|json|css|scss|md|yaml|yml)$
-      exclude: (\.(min\.js|min\.css)$)
-      fail_fast: true
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: \.(js|ts|jsx|tsx|json|css|scss|md|yaml|yml)$
+        exclude: (\.(min\.js|min\.css)$)
+        fail_fast: true
 
-- repo: local
-  hooks:
-    - id: runflake8
-      name: runflake8
-      entry: bash -c "cd aiiabox && poetry run flake8 --exclude=apps/**/migrations,**/__init__.py"
-      language: system
-      pass_filenames: false
-      verbose: true
-      fail_fast: true
+  - repo: local
+    hooks:
+      - id: runflake8
+        name: runflake8
+        entry: bash -c "cd aiiabox && poetry run flake8 --exclude=apps/**/migrations,**/__init__.py"
+        language: system
+        pass_filenames: false
+        verbose: true
+        fail_fast: true
 
-- repo: local
-  hooks:
-    - id: runtests
-      name: runtests
-      entry: bash -c "cd aiiabox && poetry run coverage run --omit=**/migrations/*,manage.py,config/settings/__init__.py,apps/**/models.py manage.py test"
-      language: system
-      pass_filenames: false
-      verbose: true
-      fail_fast: true
+  - repo: local
+    hooks:
+      - id: runtests
+        name: runtests
+        entry: bash -c "cd aiiabox && DJANGO_SETTINGS_MODULE=config.settings_test poetry run coverage run --omit=**/migrations/*,manage.py,config/settings/__init__.py,apps/**/models.py manage.py test"
+        language: system
+        pass_filenames: false
+        verbose: true
+        fail_fast: true
 
-- repo: local
-  hooks:
-    - id: coverage
-      name: coverage
-      entry: bash -c "cd aiiabox && poetry run coverage report -m --omit=apps/**/admin.py,apps/**/models.py"
-      language: system
-      pass_filenames: false
-      verbose: true
-      fail_fast: true
+  - repo: local
+    hooks:
+      - id: coverage
+        name: coverage
+        entry: bash -c "cd aiiabox && poetry run coverage report -m --omit=apps/**/admin.py,apps/**/models.py"
+        language: system
+        pass_filenames: false
+        verbose: true
+        fail_fast: true
 
-- repo: local
-  hooks:
-    - id: pip-audit
-      name: pip-audit
-      entry: bash -c "cd aiiabox && poetry run pip-audit"
-      language: system
-      pass_filenames: false
-      verbose: true
-      fail_fast: true
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit
+        entry: bash -c "cd aiiabox && poetry run pip-audit"
+        language: system
+        pass_filenames: false
+        verbose: true
+        fail_fast: true
 
-- repo: local
-  hooks:
-    - id: documentation
-      name: documentation
-      entry: echo "Did you add documentation?"
-      language: system
-      pass_filenames: false
-      verbose: true
+  - repo: local
+    hooks:
+      - id: documentation
+        name: documentation
+        entry: echo "Did you add documentation?"
+        language: system
+        pass_filenames: false
+        verbose: true
