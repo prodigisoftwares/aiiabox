@@ -1,0 +1,62 @@
+{% comment %}
+Minimal Sidebar Navigation
+
+Simple, functional sidebar inspired by Open WebUI.
+Features:
+- Collapsible on mobile
+- Clean, minimal design
+- Dark mode ready
+- Navigation links for authenticated users
+{% endcomment %}
+
+<nav class="w-64 bg-gray-50 border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800 flex flex-col">
+  {# Header #}
+  <div class="p-4 border-b border-gray-200 dark:border-gray-800">
+    <h1 class="text-xl font-bold">
+      <a href="/" class="hover:text-blue-600 transition-smooth">
+        AI Platform
+      </a>
+    </h1>
+  </div>
+
+  {# Navigation Links #}
+  {% if user.is_authenticated %}
+    <div class="flex-1 overflow-y-auto p-4 space-y-2">
+      <a href="/dashboard"
+         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth">
+        Dashboard
+      </a>
+      <a href="/chats"
+         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth">
+        Chats
+      </a>
+      <a href="/images"
+         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth">
+        Images
+      </a>
+    </div>
+
+    {# User Menu #}
+    <div class="border-t border-gray-200 dark:border-gray-800 p-4 space-y-2">
+      <a href="/profile"
+         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth text-sm">
+        Profile
+      </a>
+      <a href="/settings"
+         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth text-sm">
+        Settings
+      </a>
+      <a href="/logout"
+         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth text-sm text-red-600 dark:text-red-400">
+        Logout
+      </a>
+    </div>
+  {% else %}
+    <div class="flex-1 p-4">
+      <a href="/login"
+         class="block w-full px-4 py-2 text-center bg-blue-600 text-white rounded hover:bg-blue-700 transition-smooth font-medium">
+        Sign In
+      </a>
+    </div>
+  {% endif %}
+</nav>

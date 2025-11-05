@@ -12,10 +12,9 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "AI Platform")
 
     def test_home_view_shows_login_for_anonymous_users(self):
-        """Anonymous users should see login/register links."""
+        """Anonymous users should see sign in link in sidebar."""
         response = self.client.get("/")
         self.assertContains(response, "Sign In")
-        self.assertContains(response, "Create Account")
 
     def test_home_view_shows_dashboard_for_authenticated_users(self):
         """Authenticated users should see dashboard and settings links."""
@@ -41,10 +40,10 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "AI Platform")
         self.assertContains(response, "nav")
 
-    def test_footer_renders_with_copyright(self):
-        """Verify footer is rendered with copyright year."""
+    def test_sidebar_renders(self):
+        """Verify sidebar navigation is rendered."""
         response = self.client.get("/")
-        self.assertContains(response, "©")
+        self.assertContains(response, "AI Platform")
 
 
 class ErrorPageTests(TestCase):

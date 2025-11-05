@@ -71,10 +71,10 @@ The `apps.core` app provides shared UI components and foundational templates for
 ```
 apps/core/
 ├── templates/core/
-│   ├── base.html                    # Main base template extended by all pages
-│   ├── home.html                    # Home page example
+│   ├── base.html                    # Main base template with sidebar layout
+│   ├── home.html                    # Home/landing page
 │   ├── includes/
-│   │   └── _navigation.html         # Responsive navigation component
+│   │   └── _sidebar.html            # Minimal sidebar navigation component
 │   └── errors/
 │       ├── 404.html                 # Page not found error template
 │       └── 500.html                 # Server error template
@@ -82,7 +82,7 @@ apps/core/
 │   ├── __init__.py
 │   └── test_views.py                # View and template rendering tests
 ├── urls.py                          # Core app URL routing
-├── views.py                         # HomeView for testing base template
+├── views.py                         # HomeView
 ├── models.py                        # Empty (core app has no models)
 ├── admin.py                         # Empty
 └── apps.py                          # App configuration
@@ -90,30 +90,24 @@ apps/core/
 
 ### Base Template (`base.html`)
 
-The base template is the foundation for all authenticated and public pages. It includes:
+Minimal sidebar-based layout inspired by Open WebUI.
 
 **Features:**
 
-- Meta tags (viewport, OG tags, Twitter card tags)
-- Tailwind CSS via CDN (production should use local build)
-- Alpine.js via CDN for interactive components
-- Navigation component via include
-- Named blocks for content extension
-- Footer with copyright year
-- Smooth transition CSS utilities
-- Hamburger menu animation styles
+- Clean, minimal design focused on functionality
+- Tailwind CSS via CDN
+- Alpine.js for interactive components
+- Two-column layout: sidebar + main content area
+- Dark mode ready with `dark:` Tailwind classes
+- Full-height layout (h-screen)
 
 **Blocks for Extension:**
 
 ```django
-{% block title %}          {# Page title and browser tab #}
-{% block og_title %}       {# Open Graph title #}
-{% block og_description %} {# Open Graph description #}
-{% block twitter_title %}  {# Twitter card title #}
-{% block twitter_description %} {# Twitter card description #}
-{% block content %}        {# Main page content #}
-{% block extra_css %}      {# Page-specific CSS #}
-{% block extra_js %}       {# Page-specific JavaScript #}
+{% block title %}     {# Page title in browser tab #}
+{% block content %}   {# Main page content #}
+{% block extra_css %} {# Page-specific CSS #}
+{% block extra_js %}  {# Page-specific JavaScript #}
 ```
 
 **Usage - Extending Base Template:**
@@ -121,107 +115,96 @@ The base template is the foundation for all authenticated and public pages. It i
 ```django
 {% extends "core/base.html" %}
 
-{% block title %}My Page Title{% endblock title %}
+{% block title %}Page Title{% endblock title %}
+
 {% block content %}
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    {# Your page content here #}
+  <div class="p-8">
+    {# Your content here #}
   </div>
 {% endblock content %}
 ```
 
-### Navigation Component (`_navigation.html`)
+### Sidebar Navigation Component (`_sidebar.html`)
 
-Mobile-first responsive navigation with hamburger menu for mobile devices.
+Minimal, functional sidebar navigation (Open WebUI style).
 
 **Features:**
 
-- Sticky header that stays at top on scroll
-- Desktop: Horizontal navigation with user dropdown
-- Mobile: Hamburger menu toggle with slide animations
-- Active state indicators for current page
-- User dropdown with profile/settings/logout links
-- Keyboard navigation (Escape to close menu)
-- Click-away closing on mobile menu
-- Accessibility ARIA attributes
+- Fixed-width sidebar (w-64)
+- Clean borders and minimal styling
+- Shows authenticated user menu: Dashboard, Chats, Images, Profile, Settings, Logout
+- Shows unauthenticated user menu: Sign In only
+- Hover states for interactive feedback
+- Dark mode support via `dark:` classes
+- Simple, functional design - no fancy animations
 
-**Architecture:**
-
-- Uses Alpine.js component scope: `mobileMenuOpen` boolean from parent
-- Desktop navigation hidden with `hidden sm:flex` (mobile-first)
-- Mobile menu hidden with `sm:hidden`
-- Smooth transitions with `transition-smooth` and `transition-smooth-300` classes
-
-**Alpine.js State Management:**
-
-- `mobileMenuOpen` - Controls mobile menu visibility (managed in base.html)
-- `userDropdownOpen` - Controls user dropdown visibility (desktop only)
-
-**Responsive Breakpoints:**
-
-- Mobile (< 640px): Hamburger menu, navigation links in dropdown
-- Small+ (≥ 640px): Horizontal navigation visible, hamburger hidden
-
-**Customization:**
-To add new navigation links, edit the navigation component at:
+**Layout:**
 
 ```
-apps/core/templates/core/includes/_navigation.html
+Sidebar (w-64)
+├── Header with logo/brand
+├── Navigation Links (flex-1 to fill space)
+│   ├── Dashboard
+│   ├── Chats
+│   ├── Images
+│   └── [More links as needed]
+└── User Menu (at bottom)
+    ├── Profile
+    ├── Settings
+    └── Logout
+```
+
+**Customization:**
+
+To add new navigation links, edit:
+
+```
+apps/core/templates/core/includes/_sidebar.html
+```
+
+Simply add more `<a>` tags in the navigation section with the same styling:
+
+```django
+<a href="/path" class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth">
+  Link Text
+</a>
 ```
 
 ### Error Pages
 
 #### 404 Page (`errors/404.html`)
 
-- Extends base template for consistent styling
-- Shows "Page Not Found" with helpful links
+- Extends base template for consistent styling and sidebar
+- Shows "Page Not Found" with helpful message
 - Links to home and dashboard (for authenticated users)
+- Maintains sidebar navigation context
 
 #### 500 Page (`errors/500.html`)
 
-- Extends base template for consistent styling
-- Shows "Server Error" with helpful messaging
+- Extends base template for consistent styling and sidebar
+- Shows "Server Error" with helpful message
 - Links to home and dashboard (for authenticated users)
-
-**Configuration:**
-To enable custom error pages, add to settings.py:
-
-```python
-TEMPLATES = [
-    {
-        ...
-        "OPTIONS": {
-            ...
-            "context_processors": [...],
-        },
-    },
-]
-```
-
-Then in urls.py add custom error handlers:
-
-```python
-handler404 = 'apps.core.views.custom_404'
-handler500 = 'apps.core.views.custom_500'
-```
+- Maintains sidebar navigation context
 
 ### Home Page (`home.html`)
 
-Example page that extends `base.html` to demonstrate:
+Minimal landing/home page that extends `base.html`.
 
-- How to extend the base template
-- Mobile-first responsive card layouts
-- Conditional content for authenticated vs. anonymous users
-- Proper use of Tailwind CSS and Alpine.js integration
+**Features:**
+
+- Simple welcome message for unauthenticated users (Sign In link available in sidebar)
+- For authenticated users: welcome message with link to dashboard
+- No fancy cards or complex layouts - just clean, functional
+- No duplicate buttons - authentication links centralized in sidebar
 
 ### Testing
 
 View rendering tests verify:
 
 - Base template renders without errors
-- Navigation component is included
+- Sidebar navigation is included
 - Anonymous users see login/register links
 - Authenticated users see dashboard and settings
-- Footer renders with copyright
 - 404 pages return correct status code
 
 Run tests:
@@ -234,36 +217,34 @@ poetry run python manage.py test apps.core.tests.test_views
 
 **Transition Classes:**
 
-- `.transition-smooth` - 200ms smooth transition
-- `.transition-smooth-300` - 300ms smooth transition
+- `.transition-smooth` - 200ms smooth transition for all properties
 
 **Tailwind Responsive Prefixes:**
 
-- `sm:` - Small screens (640px+)
-- `md:` - Medium screens (768px+)
-- `lg:` - Large screens (1024px+)
-- `xl:` - Extra large screens (1280px+)
+- `dark:` - Dark mode styles
 
-**Button Styling:**
+**Dark Mode:**
 
-- Primary: `bg-blue-600 text-white hover:bg-blue-700`
-- Secondary: `bg-gray-200 text-gray-900 hover:bg-gray-300`
-- Consistent rounded corners: `rounded-lg`
+Body uses `dark:` prefixes for dark mode support:
+
+- `dark:bg-gray-950` - Sidebar background
+- `dark:border-gray-800` - Borders
+- `dark:hover:bg-gray-800` - Hover states
+- `dark:text-gray-50` - Text
 
 ### Frontend Asset Configuration
 
 **Current Setup:**
 
-- Tailwind CSS: Loaded via Tailwind CDN
-- Alpine.js: Loaded via jsDelivr CDN
-- Production: Should use local built files
+- Tailwind CSS: Loaded via Tailwind CDN (includes JIT compiler)
+- Alpine.js: Loaded via jsDelivr CDN v3
+- No external CSS frameworks or bloat
 
-**Future Optimization:**
+**Production Optimization:**
 
-- Move Tailwind build to npm pipeline
+- Move Tailwind build to npm pipeline for better tree-shaking
+- Pre-compile CSS to reduce initial load
 - Store Alpine.js locally in static/js/
-- Implement CSS/JS minification
-- Add cache busting via manifest file
 
 ## App Structure
 

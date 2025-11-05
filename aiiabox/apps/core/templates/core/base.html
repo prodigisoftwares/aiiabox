@@ -9,27 +9,6 @@
       {% endblock title %}
     </title>
 
-    {# Social Media Meta Tags #}
-    <meta property="og:title"
-          content="{% block og_title %}
-                     AI Platform
-                   {% endblock og_title %}" />
-    <meta property="og:description"
-          content="{% block og_description %}
-                     Personal AI chat and image generation platform
-                   {% endblock og_description %}" />
-    <meta property="og:type" content="website" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title"
-          content="{% block twitter_title %}
-                     AI Platform
-                   {% endblock twitter_title %}" />
-    <meta name="twitter:description"
-          content="{% block twitter_description %}
-                     Personal AI chat and image generation platform
-                   {% endblock twitter_description %}" />
-
     {# Tailwind CSS #}
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -37,10 +16,10 @@
     <script defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    {# Additional CSS #}
     <style>
-        {
-            # Smooth transition timing class #
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .transition-smooth {
@@ -48,69 +27,24 @@
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 200ms;
         }
-
-        .transition-smooth-300 {
-            transition-property: all;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transition-duration: 300ms;
-        }
-
-            {
-            # Hamburger menu animation #
-        }
-
-        .hamburger-line {
-            @apply transition-smooth;
-        }
-
-        .hamburger-open .hamburger-top {
-            transform: rotate(45deg) translateY(11px);
-        }
-
-        .hamburger-open .hamburger-middle {
-            opacity: 0;
-        }
-
-        .hamburger-open .hamburger-bottom {
-            transform: rotate(-45deg) translateY(-11px);
-        }
-
-            {
-            # Text rendering optimization #
-        }
-
-        body {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
     </style>
 
     {% block extra_css %}
     {% endblock extra_css %}
   </head>
 
-  <body class="bg-gray-50 text-gray-900"
-        x-data="{ mobileMenuOpen: false }"
-        @keydown.escape.window="mobileMenuOpen = false">
-    {# Navigation #}
-    {% include "core/includes/_navigation.html" %}
+  <body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      {# Sidebar Navigation #}
+      {% include "core/includes/_sidebar.html" %}
 
-    {# Main Content #}
-    <main class="min-h-screen">
-      {% block content %}
-      {% endblock content %}
-    </main>
+      {# Main Content Area #}
+      <main class="flex-1 overflow-auto">
+        {% block content %}
+        {% endblock content %}
+      </main>
+    </div>
 
-    {# Footer #}
-    <footer class="bg-white border-t border-gray-200 mt-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <p class="text-center text-sm text-gray-600">
-          © {% now "Y" %} AI Platform. All rights reserved.
-        </p>
-      </div>
-    </footer>
-
-    {# Scripts #}
     {% block extra_js %}
     {% endblock extra_js %}
   </body>

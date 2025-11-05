@@ -1,0 +1,24 @@
+{% comment %}
+User Dropdown Button
+
+Trigger button for user dropdown menu.
+Requires Alpine.js scope with userDropdownOpen state.
+
+Parameters:
+- user: Django user object (available in context)
+{% endcomment %}
+
+<button @click="userDropdownOpen = !userDropdownOpen"
+        @click.away="userDropdownOpen = false"
+        class="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-smooth font-medium"
+        aria-expanded="false"
+        aria-haspopup="true">
+  <span>{{ user.username }}</span>
+  <svg class="w-5 h-5 transition-transform"
+       :class="{ 'rotate-180': userDropdownOpen }"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+  </svg>
+</button>
