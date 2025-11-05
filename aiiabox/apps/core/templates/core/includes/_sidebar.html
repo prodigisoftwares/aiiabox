@@ -46,10 +46,14 @@ Features:
          class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth text-sm">
         Settings
       </a>
-      <a href="/logout"
-         class="block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth text-sm text-red-600 dark:text-red-400">
-        Logout
-      </a>
+      {# Logout form (POST request required by Django) #}
+      <form method="post" action="/logout/" class="m-0 p-0">
+        {% csrf_token %}
+        <button type="submit"
+                class="w-full text-left block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-smooth text-sm text-red-600 dark:text-red-400 bg-transparent border-0 cursor-pointer font-inherit">
+          Logout
+        </button>
+      </form>
     </div>
   {% else %}
     <div class="flex-1 p-4">
