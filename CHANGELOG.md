@@ -9,6 +9,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Phase 1: Foundation & Authentication
 
+#### Issue #6: Authentication Pages (Login & Logout)
+
+**Added**
+
+- `CustomAuthenticationForm` in `apps/core/forms.py`
+  - Extends Django's `AuthenticationForm` with Tailwind CSS styling
+  - Username field with dark mode support
+  - Password field with dark mode support
+  - Custom widget classes for consistent form styling across app
+  - Focus states and transitions for better UX
+- `CustomLoginView` class-based view
+  - Uses Django's built-in `LoginView` with custom form
+  - Renders `core/auth/login.html` template
+  - Redirects authenticated users away from login page
+  - Redirects to home page after successful login
+- `CustomLogoutView` class-based view
+  - Uses Django's built-in `LogoutView`
+  - Clears user session on logout
+  - Redirects to home page
+- `login.html` template - User sign-in form
+  - Centered form layout with max-width container
+  - Header with sign-in title and welcome message
+  - Form fields with Tailwind styling
+  - Error message display with color-coded feedback
+  - Remember me checkbox (for future functionality)
+  - Submit button with hover/active states
+  - Footer with admin contact link
+  - Mobile-first responsive design
+  - Dark mode support with CSS variables
+- Authentication configuration in `config/settings.py`
+  - `LOGIN_URL = "core:login"` - Redirect for @login_required views
+  - `LOGIN_REDIRECT_URL = "core:home"` - Redirect after successful login
+- URL routes in `apps/core/urls.py`
+  - `path("login/", views.CustomLoginView.as_view(), name="login")`
+  - `path("logout/", views.CustomLogoutView.as_view(), name="logout")`
+- Comprehensive test suite (11 tests) in `apps/core/tests/test_auth.py`
+  - Login page loads and displays form
+  - Valid credentials authenticate user and redirect
+  - Invalid credentials show error messages
+  - Authenticated users redirected from login page
+  - Username case-sensitivity documented
+  - Logout clears authentication
+  - Logout redirects to home page
+  - Session handling and cleanup
+
+**Technical Details**
+
+- Uses Django's built-in authentication system (no custom auth)
+- Tailwind CSS for responsive, accessible form styling
+- Dark mode support with CSS variables and dark: modifiers
+- All form inputs use consistent styling patterns
+- Error messages display inline with form fields
+- Focus states with blue-500 ring for accessibility
+- 11/11 tests passing: `python manage.py test apps.core.tests.test_auth`
+- Follows CLAUDE.md architecture standards:
+  - Form classes separated in dedicated forms.py
+  - Class-based views with clear single responsibility
+  - Comprehensive docstrings on all classes
+  - User-friendly error messages
+  - Progressive enhancement (works without JavaScript)
+
+**Files Created**
+
+- `apps/core/forms.py` - CustomAuthenticationForm
+- `apps/core/templates/core/auth/login.html` - Login page template
+- `apps/core/tests/test_auth.py` - Authentication tests (11 tests)
+
+**Files Modified**
+
+- `apps/core/views.py` - Added CustomLoginView and CustomLogoutView
+- `apps/core/urls.py` - Added login and logout URL routes
+- `config/settings.py` - Added LOGIN_URL and LOGIN_REDIRECT_URL settings
+- `apps/core/templates/core/includes/_sidebar.html` - Changed logout from GET link to POST form (Django requirement)
+- `PROJECT_OVERVIEW.md` - Updated Phase 1 deliverables (password reset deferred for single-user scenario)
+
+**Password Reset Deferred**
+
+- Single-user scenario (admin access only) makes traditional password reset unnecessary
+- Users can reset passwords via Django admin console if needed
+- Reduces scope and complexity per CLAUDE.md simplicity principle
+- Can be implemented in future if multi-user support is added
+
+**Integration Points Ready**
+
+- Sidebar navigation links to `/login` for anonymous users
+- Sidebar navigation links to `/logout` for authenticated users (red colored)
+- Home page template conditional rendering based on user.is_authenticated
+- Foundation for @login_required protected views in Phase 2
+
 #### Issue #5: Base Template & Navigation System
 
 **Added**

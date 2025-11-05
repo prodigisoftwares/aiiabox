@@ -76,9 +76,9 @@ Anything else I can think of ...
 - [x] Base template with responsive navigation (mobile-first) - **Issue #5 Complete**
 - [x] 404 error page - **Issue #5 Complete**
 - [x] 500 error page - **Issue #5 Complete**
-- [ ] Login page with Tailwind styling
-- [ ] Logout functionality
-- [ ] Password reset flow (request + confirm pages)
+- [ ] Login page with Tailwind styling - **Issue #6**
+- [ ] Logout functionality - **Issue #6**
+- [ ] ~~Password reset flow~~ - **Deferred** (admin console sufficient for single user)
 - [ ] User profile edit page
 - [ ] Settings/preferences edit page
 - [ ] Responsive design testing (mobile/desktop)
