@@ -15,17 +15,20 @@ Parameters: None
      x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
      x-transition:leave-end="opacity-0 transform -translate-y-2 scale-95"
      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-  <a href="/profile"
+  <a href="{% url 'profiles:profile_detail' %}"
      class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-smooth">
     Profile
   </a>
-  <a href="/settings"
+  <a href="{% url 'profiles:settings_edit' %}"
      class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-smooth">
     Settings
   </a>
   <hr class="my-2" />
-  <a href="/logout"
-     class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-smooth">
-    Logout
-  </a>
+  <form method="post" action="{% url 'core:logout' %}" class="block">
+    {% csrf_token %}
+    <button type="submit"
+            class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-smooth border-0 bg-transparent cursor-pointer">
+      Logout
+    </button>
+  </form>
 </div>
