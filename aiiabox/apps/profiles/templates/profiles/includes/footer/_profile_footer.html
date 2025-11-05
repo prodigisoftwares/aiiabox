@@ -1,0 +1,10 @@
+{% load i18n %}
+{% comment %}
+Profile footer partial.
+Shows when the profile was last updated.
+{% endcomment %}
+<div class="text-sm text-gray-500 dark:text-gray-400">
+  {% blocktrans with date=profile.updated_at|date:"F d, Y \a\t g:i A" %}
+    Profile last updated: {{ date }}
+  {% endblocktrans %}
+</div>

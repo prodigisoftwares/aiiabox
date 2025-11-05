@@ -8,8 +8,8 @@ class UserProfileAdmin(admin.ModelAdmin):
     """
     Admin interface for UserProfile model.
 
-    Displays user profile information with read-only user field to prevent
-    orphaned profiles. Allows editing of avatar, bio, and preferences.
+    Displays user profile information and allows editing of avatar, bio, and
+    preferences. User field can be selected when creating new profiles.
     """
 
     list_display = ("user_display", "has_avatar", "created_at", "updated_at")
@@ -20,7 +20,7 @@ class UserProfileAdmin(admin.ModelAdmin):
         "user__first_name",
         "user__last_name",
     )
-    readonly_fields = ("user", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
     fieldsets = (
         ("User", {"fields": ("user",)}),
         (

@@ -1,0 +1,22 @@
+{% comment %}
+Avatar preview JavaScript functionality
+{% endcomment %}
+<script>
+  const avatarInput = document.getElementById('{{ form.avatar.id_for_label }}');
+  const previewContainer = document.getElementById('avatar-preview-container');
+  const previewImg = document.getElementById('avatar-preview');
+
+  avatarInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        previewImg.src = event.target.result;
+        previewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewContainer.classList.add('hidden');
+    }
+  });
+</script>

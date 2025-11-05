@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Profile" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="flex-1 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+      {% include "profiles/includes/header/_page_header.html" %}
+      {% include "profiles/includes/sections/_avatar_section.html" %}
+      {% include "profiles/includes/sections/_account_info_section.html" %}
+      {% include "profiles/includes/sections/_bio_section.html" %}
+      {% include "profiles/includes/footer/_profile_footer.html" %}
+    </div>
+  </div>
+{% endblock content %}

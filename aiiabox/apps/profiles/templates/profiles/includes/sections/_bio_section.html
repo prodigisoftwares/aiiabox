@@ -1,0 +1,25 @@
+{% load i18n %}
+{% comment %}
+Bio section partial.
+Displays the user's bio if present, or prompts to add one.
+{% endcomment %}
+{% if profile.bio %}
+  <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
+      {% trans "Bio" %}
+    </h2>
+    <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+      {{ profile.bio }}
+    </p>
+  </div>
+{% else %}
+  <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <p class="text-gray-600 dark:text-gray-400 italic">
+      {% trans "No bio added yet." %}
+      <a href="{% url 'profiles:profile_edit' %}"
+         class="text-blue-600 dark:text-blue-400 hover:underline">
+        {% trans "Add one now." %}
+      </a>
+    </p>
+  </div>
+{% endif %}

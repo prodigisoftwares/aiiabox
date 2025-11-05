@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Edit Profile" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="flex-1 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+      {# Page title #}
+      {% include "profiles/includes/sections/_page_title.html" %}
+
+      {# Account info (read-only) #}
+      {% include "profiles/includes/sections/_account_info.html" %}
+
+      {# Profile edit form #}
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        {# Form non-field errors #}
+        {% include "profiles/includes/forms/_form_errors.html" %}
+
+        {# Avatar field #}
+        {% include "profiles/includes/forms/_avatar_field.html" %}
+
+        {# Bio field #}
+        {% include "profiles/includes/forms/_bio_field.html" %}
+
+        {# Form actions #}
+        {% include "profiles/includes/forms/_form_actions.html" %}
+      </form>
+    </div>
+  </div>
+
+  {# Avatar preview script #}
+  {% include "profiles/includes/forms/_avatar_script.html" %}
+{% endblock content %}
