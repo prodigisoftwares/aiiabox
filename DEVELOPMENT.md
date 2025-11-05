@@ -62,6 +62,209 @@ Technical implementation details and guidelines for developing on this project.
   - `name` (CharField) - Project name
 - **Note:** This stub exists to support the FK reference in UserSettings.default_project
 
+## Base Template & Navigation (Issue #5)
+
+### Core App Structure
+
+The `apps.core` app provides shared UI components and foundational templates for the entire application.
+
+```
+apps/core/
+├── templates/core/
+│   ├── base.html                    # Main base template extended by all pages
+│   ├── home.html                    # Home page example
+│   ├── includes/
+│   │   └── _navigation.html         # Responsive navigation component
+│   └── errors/
+│       ├── 404.html                 # Page not found error template
+│       └── 500.html                 # Server error template
+├── tests/
+│   ├── __init__.py
+│   └── test_views.py                # View and template rendering tests
+├── urls.py                          # Core app URL routing
+├── views.py                         # HomeView for testing base template
+├── models.py                        # Empty (core app has no models)
+├── admin.py                         # Empty
+└── apps.py                          # App configuration
+```
+
+### Base Template (`base.html`)
+
+The base template is the foundation for all authenticated and public pages. It includes:
+
+**Features:**
+
+- Meta tags (viewport, OG tags, Twitter card tags)
+- Tailwind CSS via CDN (production should use local build)
+- Alpine.js via CDN for interactive components
+- Navigation component via include
+- Named blocks for content extension
+- Footer with copyright year
+- Smooth transition CSS utilities
+- Hamburger menu animation styles
+
+**Blocks for Extension:**
+
+```django
+{% block title %}          {# Page title and browser tab #}
+{% block og_title %}       {# Open Graph title #}
+{% block og_description %} {# Open Graph description #}
+{% block twitter_title %}  {# Twitter card title #}
+{% block twitter_description %} {# Twitter card description #}
+{% block content %}        {# Main page content #}
+{% block extra_css %}      {# Page-specific CSS #}
+{% block extra_js %}       {# Page-specific JavaScript #}
+```
+
+**Usage - Extending Base Template:**
+
+```django
+{% extends "core/base.html" %}
+
+{% block title %}My Page Title{% endblock title %}
+{% block content %}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    {# Your page content here #}
+  </div>
+{% endblock content %}
+```
+
+### Navigation Component (`_navigation.html`)
+
+Mobile-first responsive navigation with hamburger menu for mobile devices.
+
+**Features:**
+
+- Sticky header that stays at top on scroll
+- Desktop: Horizontal navigation with user dropdown
+- Mobile: Hamburger menu toggle with slide animations
+- Active state indicators for current page
+- User dropdown with profile/settings/logout links
+- Keyboard navigation (Escape to close menu)
+- Click-away closing on mobile menu
+- Accessibility ARIA attributes
+
+**Architecture:**
+
+- Uses Alpine.js component scope: `mobileMenuOpen` boolean from parent
+- Desktop navigation hidden with `hidden sm:flex` (mobile-first)
+- Mobile menu hidden with `sm:hidden`
+- Smooth transitions with `transition-smooth` and `transition-smooth-300` classes
+
+**Alpine.js State Management:**
+
+- `mobileMenuOpen` - Controls mobile menu visibility (managed in base.html)
+- `userDropdownOpen` - Controls user dropdown visibility (desktop only)
+
+**Responsive Breakpoints:**
+
+- Mobile (< 640px): Hamburger menu, navigation links in dropdown
+- Small+ (≥ 640px): Horizontal navigation visible, hamburger hidden
+
+**Customization:**
+To add new navigation links, edit the navigation component at:
+
+```
+apps/core/templates/core/includes/_navigation.html
+```
+
+### Error Pages
+
+#### 404 Page (`errors/404.html`)
+
+- Extends base template for consistent styling
+- Shows "Page Not Found" with helpful links
+- Links to home and dashboard (for authenticated users)
+
+#### 500 Page (`errors/500.html`)
+
+- Extends base template for consistent styling
+- Shows "Server Error" with helpful messaging
+- Links to home and dashboard (for authenticated users)
+
+**Configuration:**
+To enable custom error pages, add to settings.py:
+
+```python
+TEMPLATES = [
+    {
+        ...
+        "OPTIONS": {
+            ...
+            "context_processors": [...],
+        },
+    },
+]
+```
+
+Then in urls.py add custom error handlers:
+
+```python
+handler404 = 'apps.core.views.custom_404'
+handler500 = 'apps.core.views.custom_500'
+```
+
+### Home Page (`home.html`)
+
+Example page that extends `base.html` to demonstrate:
+
+- How to extend the base template
+- Mobile-first responsive card layouts
+- Conditional content for authenticated vs. anonymous users
+- Proper use of Tailwind CSS and Alpine.js integration
+
+### Testing
+
+View rendering tests verify:
+
+- Base template renders without errors
+- Navigation component is included
+- Anonymous users see login/register links
+- Authenticated users see dashboard and settings
+- Footer renders with copyright
+- 404 pages return correct status code
+
+Run tests:
+
+```bash
+poetry run python manage.py test apps.core.tests.test_views
+```
+
+### CSS Classes & Utilities
+
+**Transition Classes:**
+
+- `.transition-smooth` - 200ms smooth transition
+- `.transition-smooth-300` - 300ms smooth transition
+
+**Tailwind Responsive Prefixes:**
+
+- `sm:` - Small screens (640px+)
+- `md:` - Medium screens (768px+)
+- `lg:` - Large screens (1024px+)
+- `xl:` - Extra large screens (1280px+)
+
+**Button Styling:**
+
+- Primary: `bg-blue-600 text-white hover:bg-blue-700`
+- Secondary: `bg-gray-200 text-gray-900 hover:bg-gray-300`
+- Consistent rounded corners: `rounded-lg`
+
+### Frontend Asset Configuration
+
+**Current Setup:**
+
+- Tailwind CSS: Loaded via Tailwind CDN
+- Alpine.js: Loaded via jsDelivr CDN
+- Production: Should use local built files
+
+**Future Optimization:**
+
+- Move Tailwind build to npm pipeline
+- Store Alpine.js locally in static/js/
+- Implement CSS/JS minification
+- Add cache busting via manifest file
+
 ## App Structure
 
 ### profiles App

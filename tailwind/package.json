@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "tw:build": "tailwindcss -i ./custom.css -o ../aiiabox/static/css/styles.css --minify",
+    "tw:watch": "tailwindcss -i ./custom.css -o ../aiiabox/static/css/styles.css --watch --minify"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.4.4"
+  }
+}
