@@ -1,0 +1,36 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Settings" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="flex-1 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+      {# Page title #}
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-50">
+          {% trans "Settings" %}
+        </h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">
+          {% trans "Manage your preferences and theme settings." %}
+        </p>
+      </div>
+
+      {# Settings edit form #}
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        {# Form non-field errors #}
+        {% include "profiles/includes/forms/_form_errors.html" %}
+
+        {# Theme field #}
+        {% include "profiles/includes/forms/_theme_field.html" %}
+
+        {# Form actions #}
+        {% include "profiles/includes/forms/_form_actions.html" %}
+      </form>
+    </div>
+  </div>
+{% endblock content %}

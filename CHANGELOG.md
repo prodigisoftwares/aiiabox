@@ -9,6 +9,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Phase 1: Foundation & Authentication
 
+#### Issue #13: Settings/Preferences Edit Page
+
+**Added**
+
+- `UserSettingsForm` class in `apps/profiles/forms/settings.py`
+  - Allows users to edit theme preference (light/dark/auto)
+  - Uses RadioSelect widget for better UX
+  - Excludes non-editable fields: user, default_project, llm_preferences, timestamps
+  - Theme field is required, must be valid choice
+  - Extensible for future LLM preference fields
+- `SettingsEditView` class-based view in `apps/profiles/views/settings.py`
+  - UpdateView for editing UserSettings
+  - Requires LoginRequiredMixin authentication
+  - Gets current user's settings automatically
+  - Redirects to profile detail on successful save
+  - Shows form errors on invalid input
+- `settings_edit.html` template
+  - Mirrors profile_edit.html structure and styling
+  - Displays settings page title and description
+  - Includes theme field radio buttons
+  - Reuses \_form_errors.html and \_form_actions.html includes
+  - Mobile-first responsive design with dark mode support
+- `_theme_field.html` template partial
+  - Reusable theme selection field component
+  - Radio button options for light/dark/auto themes
+  - Field label, help text, and error display
+  - Proper spacing and accessibility
+- URL route in `apps/profiles/urls.py`
+  - `path("settings/edit/", views.SettingsEditView.as_view(), name="settings_edit")`
+- Comprehensive test suite (25 tests)
+  - UserSettingsForm: 14 tests
+    - Theme validation (light, dark, auto, invalid, empty)
+    - Field exclusions (user, default_project, llm_preferences, timestamps)
+    - RadioSelect widget verification
+    - Save behavior and database persistence
+  - SettingsEditView: 13 tests
+    - Authentication requirement (LoginRequiredMixin)
+    - Form rendering and initialization
+    - Theme updates and persistence
+    - Multi-user isolation
+    - Preservation of other settings fields
+    - Default theme value (auto)
+    - Redirect behavior
+
+**Technical Details**
+
+- Follows ProfileEditView/ProfileEditForm pattern for consistency
+- Uses RadioSelect widget (better UX than dropdown for small choice sets)
+- Theme options: "light", "dark", "auto" (from UserSettings.THEME_CHOICES)
+- Form validates theme against valid choices
+- Proper docstrings on form and view classes
+- 25/25 tests passing
+- Follows CLAUDE.md standards:
+  - Organized form/view modules matching profile patterns
+  - Clear single responsibility (form handles validation, view handles routing)
+  - Comprehensive docstrings explaining assumptions and behavior
+  - LoginRequiredMixin for authentication enforcement
+  - Mobile-first responsive template design
+
+**Files Created**
+
+- `apps/profiles/forms/settings.py` - UserSettingsForm
+- `apps/profiles/views/settings.py` - SettingsEditView
+- `apps/profiles/templates/profiles/settings_edit.html` - Settings page template
+- `apps/profiles/templates/profiles/includes/forms/_theme_field.html` - Theme field partial
+- `apps/profiles/tests/forms/test_settings_form.py` - UserSettingsForm tests (14 tests)
+- `apps/profiles/tests/views/test_settings_edit.py` - SettingsEditView tests (13 tests)
+
+**Files Modified**
+
+- `apps/profiles/forms/__init__.py` - Export UserSettingsForm
+- `apps/profiles/views/__init__.py` - Export SettingsEditView
+- `apps/profiles/urls.py` - Add settings edit URL route
+- `DEVELOPMENT.md` - Updated app structure and testing documentation
+
+**Foundation for Phase 3**
+
+- Settings form framework ready for LLM preference fields in Phase 3
+- Theme selection enables dark mode implementation across frontend
+- Settings infrastructure extensible for future preference types
+
 #### Issue #6: Authentication Pages (Login & Logout)
 
 **Added**

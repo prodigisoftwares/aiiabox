@@ -8,8 +8,9 @@ class UserSettingsAdmin(admin.ModelAdmin):
     """
     Admin interface for UserSettings model.
 
-    Displays user preferences and system settings. Read-only user field
-    to prevent orphaned settings.
+    Displays user preferences and system settings. Allows manual creation
+    of UserSettings for users that don't have one yet (normally auto-created
+    via signal, but useful for testing or manual user setup).
     """
 
     list_display = ("user_display", "theme", "created_at", "updated_at")
@@ -20,7 +21,7 @@ class UserSettingsAdmin(admin.ModelAdmin):
         "user__first_name",
         "user__last_name",
     )
-    readonly_fields = ("user", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
     fieldsets = (
         ("User", {"fields": ("user",)}),
         (

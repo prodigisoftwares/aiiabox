@@ -1,0 +1,49 @@
+{% load i18n %}
+{% comment %}
+Theme preference field for settings form
+Displays radio buttons for light/dark/auto theme selection
+{% endcomment %}
+<div class="space-y-4">
+  <div>
+    <label for="{{ form.theme.id_for_label }}"
+           class="text-lg font-semibold text-gray-900 dark:text-gray-50">
+      {{ form.theme.label }}
+    </label>
+    {% if form.theme.help_text %}
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        {{ form.theme.help_text }}
+      </p>
+    {% endif %}
+  </div>
+
+  {% if form.theme.errors %}
+    <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+      <ul class="list-disc list-inside space-y-1">
+        {% for error in form.theme.errors %}
+          <li class="text-sm text-red-700 dark:text-red-300">
+            {{ error }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <div class="space-y-3">
+    {% for value, label in form.theme.field.choices %}
+      <div class="flex items-center">
+        <input type="radio"
+               id="id_theme_{{ forloop.counter }}"
+               name="theme"
+               value="{{ value }}"
+               {% if form.theme.value == value %}
+                 checked
+               {% endif %}
+               class="w-4 h-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400">
+        <label for="id_theme_{{ forloop.counter }}"
+               class="ml-3 text-gray-700 dark:text-gray-300 cursor-pointer">
+          {{ label }}
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+</div>

@@ -260,16 +260,57 @@ apps/profiles/
 │   ├── __init__.py          # Exports admin classes
 │   ├── profile.py           # UserProfileAdmin
 │   └── settings.py          # UserSettingsAdmin
+├── forms/
+│   ├── __init__.py          # Exports UserProfileForm, UserSettingsForm
+│   ├── profile.py           # UserProfileForm (avatar, bio)
+│   └── settings.py          # UserSettingsForm (theme)
+├── views/
+│   ├── __init__.py          # Exports ProfileDetailView, ProfileEditView, SettingsEditView
+│   ├── profile.py           # ProfileDetailView, ProfileEditView
+│   └── settings.py          # SettingsEditView
+├── templates/profiles/
+│   ├── profile_detail.html
+│   ├── profile_edit.html
+│   ├── settings_edit.html   # Settings page template
+│   ├── includes/forms/
+│   │   ├── _form_errors.html
+│   │   ├── _form_actions.html
+│   │   ├── _avatar_field.html
+│   │   ├── _avatar_script.html
+│   │   ├── _bio_field.html
+│   │   └── _theme_field.html
+│   ├── includes/sections/
+│   │   ├── _page_title.html
+│   │   ├── _account_info.html
+│   │   ├── _account_info_section.html
+│   │   ├── _avatar_section.html
+│   │   └── _bio_section.html
+│   ├── includes/header/
+│   │   └── _page_header.html
+│   └── includes/footer/
+│       └── _profile_footer.html
 ├── tests/
 │   ├── __init__.py
-│   ├── test_models.py       # Model tests (25 tests)
-│   └── test_admin.py        # Admin display method tests
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── test_user_profile.py
+│   │   └── test_user_settings.py
+│   ├── forms/
+│   │   ├── __init__.py
+│   │   ├── test_profile_form.py
+│   │   └── test_settings_form.py
+│   ├── views/
+│   │   ├── __init__.py
+│   │   ├── test_profile_edit.py
+│   │   └── test_settings_edit.py
+│   ├── test_admin.py
+│   └── test_models.py       # Legacy (use tests/ subdirs)
 ├── migrations/              # Django auto-generated migrations
 ├── apps.py                  # App configuration with signal registration
 ├── admin.py                 # Imports admin classes (top-level)
 ├── models.py                # Imports models (top-level)
 ├── signals.py               # Post-save signal handlers
-├── views.py                 # Empty for now
+├── urls.py                  # URL routing for profiles app
 └── tests.py                 # Empty (tests in tests/ package)
 ```
 
@@ -281,11 +322,19 @@ apps/profiles/
 # Run all profiles tests
 python aiiabox/manage.py test apps.profiles.tests -v 2
 
+# Run specific test module
+python aiiabox/manage.py test apps.profiles.tests.models
+python aiiabox/manage.py test apps.profiles.tests.forms.test_settings_form
+python aiiabox/manage.py test apps.profiles.tests.views.test_settings_edit
+
 # Run specific test class
 python aiiabox/manage.py test apps.profiles.tests.test_models.UserProfileCreationTestCase
+python aiiabox/manage.py test apps.profiles.tests.forms.test_settings_form.UserSettingsFormTestCase
+python aiiabox/manage.py test apps.profiles.tests.views.test_settings_edit.SettingsEditViewTestCase
 
 # Run specific test
 python aiiabox/manage.py test apps.profiles.tests.test_models.UserProfileCreationTestCase.test_user_profile_auto_created_on_user_creation
+python aiiabox/manage.py test apps.profiles.tests.forms.test_settings_form.UserSettingsFormTestCase.test_form_saves_theme_selection
 ```
 
 ### Test Coverage
@@ -298,15 +347,24 @@ python aiiabox/manage.py test apps.profiles.tests.test_models.UserProfileCreatio
   - Custom method testing (get_llm_setting, **str**)
   - Cascade deletion behavior
   - Multi-user independence
+- **Forms:** 17 tests
+  - UserProfileForm: 10 tests (avatar validation, field exclusions, save behavior)
+  - UserSettingsForm: 14 tests (theme selection, field exclusions, radio widget, theme choices)
+- **Views:** 13 tests
+  - ProfileEditView: 13 tests (auth, form rendering, updates, redirects, multi-user isolation)
+  - SettingsEditView: 13 tests (auth, form rendering, theme updates, redirects, multi-user isolation)
 - **Admin:** 8 tests
   - Admin display methods (user_display, has_avatar)
   - Custom display logic with full names and usernames
+
+**Total: 55 tests**
 
 ### Test Philosophy
 
 - Only custom business logic is tested (not Django framework)
 - Signal handlers tested via model creation tests
 - Admin display methods tested directly without HTTP requests
+- Form validation and view behavior tested via integration tests
 - Follows CLAUDE.md "DO NOT TEST EXTERNAL CODE" principle
 
 ## Signals
@@ -329,6 +387,67 @@ python aiiabox/manage.py test apps.profiles.tests.test_models.UserProfileCreatio
 
 - Signals are registered in `apps.profiles.apps.ProfilesConfig.ready()` method
 - Imported in `apps.profiles.apps.py` to ensure signal handlers are active
+
+## Views & Forms
+
+### User Profile Edit View
+
+- **URL:** `/profile/edit/`
+- **Name:** `profiles:profile_edit`
+- **Class:** `apps.profiles.views.ProfileEditView`
+- **Form:** `UserProfileForm`
+- **Model:** `UserProfile`
+- **Authentication:** LoginRequiredMixin (redirects to login if not authenticated)
+- **Behavior:**
+  - GET: Shows profile edit form with avatar and bio fields
+  - POST (valid): Saves changes and redirects to profile detail page
+  - POST (invalid): Re-renders form with validation errors
+- **Template:** `profiles/profile_edit.html`
+
+### User Settings Edit View
+
+- **URL:** `/settings/edit/`
+- **Name:** `profiles:settings_edit`
+- **Class:** `apps.profiles.views.SettingsEditView`
+- **Form:** `UserSettingsForm`
+- **Model:** `UserSettings`
+- **Authentication:** LoginRequiredMixin (redirects to login if not authenticated)
+- **Behavior:**
+  - GET: Shows settings form with theme preference options
+  - POST (valid): Saves changes and redirects to profile detail page
+  - POST (invalid): Re-renders form with validation errors
+- **Template:** `profiles/settings_edit.html`
+- **Theme Options:** light, dark, auto (system preference)
+
+### UserProfileForm
+
+- **Location:** `apps.profiles.forms.UserProfileForm`
+- **Model:** `UserProfile`
+- **Fields:**
+  - `avatar` (ImageField) - Optional, max 10MB
+  - `bio` (TextField) - Optional
+- **Excludes:** user, created_at, updated_at, preferences
+- **Validation:**
+  - Avatar size cannot exceed 10MB
+  - Both fields are optional
+- **Widget Customization:**
+  - Avatar: FileInput with image/\* accept filter
+  - Bio: Textarea with 4 rows, placeholder text
+
+### UserSettingsForm
+
+- **Location:** `apps.profiles.forms.UserSettingsForm`
+- **Model:** `UserSettings`
+- **Fields:**
+  - `theme` (ChoiceField) - Required, RadioSelect widget
+- **Excludes:** user, default_project, llm_preferences, created_at, updated_at
+- **Theme Choices:**
+  - "light" - Light theme
+  - "dark" - Dark theme
+  - "auto" - Auto (System Preference)
+- **Validation:**
+  - Theme must be a valid choice from THEME_CHOICES
+  - Theme is a required field
 
 ## Admin Interface
 
