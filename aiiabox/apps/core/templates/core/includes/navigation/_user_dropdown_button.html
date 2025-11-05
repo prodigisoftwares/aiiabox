@@ -9,16 +9,18 @@ Parameters:
 {% endcomment %}
 
 <button @click="userDropdownOpen = !userDropdownOpen"
-        @click.away="userDropdownOpen = false"
-        class="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-smooth font-medium"
-        aria-expanded="false"
+        @keydown.escape.window="userDropdownOpen = false"
+        class="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-smooth font-medium dark:text-gray-300 dark:hover:text-blue-400"
+        :aria-expanded="userDropdownOpen"
         aria-haspopup="true">
   <span>{{ user.username }}</span>
   <svg class="w-5 h-5 transition-transform"
        :class="{ 'rotate-180': userDropdownOpen }"
        fill="none"
        stroke="currentColor"
-       viewBox="0 0 24 24">
+       viewBox="0 0 24 24"
+       aria-hidden="true"
+       focusable="false">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
   </svg>
 </button>

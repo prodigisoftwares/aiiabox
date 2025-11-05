@@ -1,0 +1,37 @@
+{% comment %}
+Top Navigation Bar
+
+Main navigation for authenticated users.
+Desktop: Shows brand, nav links, user dropdown
+Mobile: Shows brand, hamburger toggle, user menu
+
+Requires Alpine.js scope with mobileMenuOpen and userDropdownOpen state.
+
+Parameters: None
+{% endcomment %}
+
+<nav class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      {# Brand #}
+      {% include "core/includes/navigation/_brand.html" %}
+
+      {# Desktop Navigation #}
+      {% include "core/includes/navigation/_nav_links.html" %}
+
+      {# User Section (Desktop & Mobile) #}
+      <div class="flex items-center gap-4">
+        {# Mobile Menu Toggle #}
+        {% include "core/includes/navigation/_mobile_menu_toggle.html" %}
+
+        {# User Dropdown (Desktop only, authenticated users) #}
+        {% if user.is_authenticated %}
+          <div class="hidden sm:flex items-center gap-2 relative">
+            {% include "core/includes/navigation/_user_dropdown_button.html" %}
+            {% include "core/includes/navigation/_user_dropdown_menu.html" %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
