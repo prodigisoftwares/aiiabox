@@ -5,6 +5,8 @@ clear
 echo "Running local tests..."
 sleep 0.5
 
+export DJANGO_SETTINGS_MODULE=config.settings_test
+
 poetry run pre-commit run isort --all-files &&
 poetry run pre-commit run runflake8 --all-files &&
 poetry run pre-commit run runtests --all-files --verbose &&
