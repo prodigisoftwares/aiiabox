@@ -1,0 +1,24 @@
+{% load i18n %}
+{% comment %}
+Bio field with label, input, errors, and help text
+{% endcomment %}
+<div>
+  <label for="{{ form.bio.id_for_label }}"
+         class="block text-sm font-medium text-gray-900 dark:text-gray-50 mb-2">
+    {% trans "Bio" %}
+  </label>
+  {{ form.bio }}
+  {% if form.bio.errors %}
+    <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+      {% for error in form.bio.errors %}
+        {{ error }}
+        {% if not forloop.last %}
+          <br />
+        {% endif %}
+      {% endfor %}
+    </p>
+  {% endif %}
+  <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+    {% trans "Tell us about yourself. This information will be visible in your profile." %}
+  </p>
+</div>

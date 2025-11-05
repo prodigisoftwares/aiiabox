@@ -1,0 +1,47 @@
+{% load i18n %}
+{% comment %}
+Avatar field with preview functionality
+{% endcomment %}
+<div>
+  <label for="{{ form.avatar.id_for_label }}"
+         class="block text-sm font-medium text-gray-900 dark:text-gray-50 mb-2">
+    {% trans "Avatar" %}
+  </label>
+
+  {# Current avatar preview #}
+  {% if object.avatar %}
+    <div class="mb-4">
+      <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+        {% trans "Current avatar:" %}
+      </p>
+      <img src="{{ object.avatar.url }}"
+           alt="{% trans "Current profile avatar" %}"
+           class="w-24 h-24 rounded-lg object-cover border border-gray-300 dark:border-gray-600" />
+    </div>
+  {% endif %}
+
+  {# Avatar input #}
+  <div class="relative">
+    {{ form.avatar }}
+    {% if form.avatar.errors %}
+      <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+        {% for error in form.avatar.errors %}
+          {{ error }}
+          {% if not forloop.last %}
+            <br />
+          {% endif %}
+        {% endfor %}
+      </p>
+    {% endif %}
+  </div>
+
+  {# Avatar preview on selection (JavaScript) #}
+  <div id="avatar-preview-container" class="mt-4 hidden">
+    <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+      {% trans "New avatar preview:" %}
+    </p>
+    <img id="avatar-preview"
+         class="w-24 h-24 rounded-lg object-cover border border-gray-300 dark:border-gray-600"
+         alt="{% trans "Avatar preview" %}" />
+  </div>
+</div>
