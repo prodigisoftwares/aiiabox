@@ -739,3 +739,120 @@ apps/permissions/
     ├── __init__.py        # Exports test classes
     └── permissions.py     # Permission class tests (6 tests)
 ```
+
+## Admin Interface (Phase 2.3 - Issue #26)
+
+### Chat Admin Interface
+
+**URL:** `/admin/chats/chat/`
+
+**Features:**
+
+- **List Display:** Shows title, user (with full name and username), message count, created_at, updated_at
+- **Filtering:** Filter by creation date (created_at), update date (updated_at), or user
+- **Search:** Search by chat title or username
+- **Organization:** Fieldsets for Chat Information, Metadata (collapsible), and Timestamps
+- **Read-Only Fields:** created_at, updated_at (system-generated)
+- **Inline Messages:** View and manage messages directly within chat detail view (MessageInline)
+
+**Custom Display Methods:**
+
+- `user_display()` - Shows user's full name with username fallback (e.g., "John Doe (johndoe)" or "johndoe")
+- `message_count()` - Displays total number of messages in the chat
+
+**Example:**
+
+```
+Chat List Admin:
+┌─────────────────────────────────────────────────────────────────┐
+│ Title               │ User              │ Messages │ Created     │
+├─────────────────────────────────────────────────────────────────┤
+│ Python Tips         │ John Doe (john)   │ 42       │ 2025-01-15  │
+│ Django Questions    │ Jane Smith (jane) │ 18       │ 2025-01-14  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Message Admin Interface
+
+**URL:** `/admin/chats/message/`
+
+**Features:**
+
+- **List Display:** Shows parent chat title, message author (with full name), role, content preview (first 100 chars), created_at
+- **Filtering:** Filter by message role (user/assistant/system), creation date, or author
+- **Search:** Search by message content, chat title, or username
+- **Organization:** Fieldsets for Message Information, Content, and Timestamps
+- **Read-Only Fields:** created_at (system-generated)
+
+**Custom Display Methods:**
+
+- `chat_display()` - Shows parent chat title for quick navigation
+- `user_display()` - Shows message author's full name with username fallback (e.g., "John Doe (johndoe)" or "johndoe")
+- `content_preview()` - Shows first 100 characters of message content with ellipsis if truncated
+
+**Example:**
+
+```
+Message List Admin:
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Chat            │ Author          │ Role      │ Preview              │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Python Tips     │ John Doe (john) │ user      │ How do I optimize... │
+│ Python Tips     │ Assistant       │ assistant │ You can use profile… │
+│ Django Q's      │ Jane Smith      │ user      │ What's the best way… │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Admin Access
+
+**Login Required:**
+
+1. Create a superuser:
+
+   ```bash
+   poetry run python manage.py createsuperuser
+   ```
+
+2. Login at `/admin/` with superuser credentials
+
+3. Navigate to "Chats" section to see Chat and Message admin interfaces
+
+**Permissions:**
+
+- Admin users can view, add, change, and delete chats and messages
+- Staff users with permissions can perform assigned actions
+- Regular users cannot access the admin interface
+
+**Common Admin Tasks:**
+
+- **View all chats:** `/admin/chats/chat/` - See all user conversations
+- **View specific chat:** Click chat title to see detail view with inline messages
+- **Search chats:** Use search bar to find by title or username
+- **Filter chats:** Use sidebar filters to find chats by date or user
+- **View all messages:** `/admin/chats/message/` - See all messages across all chats
+- **Filter messages:** Filter by role (user/assistant/system), date, or author
+- **Search messages:** Search message content by keywords
+
+### App Structure
+
+**Chats Module (`apps.chats/`):**
+
+```
+apps/chats/
+├── admin/
+│   ├── __init__.py        # Exports ChatAdmin, MessageAdmin
+│   └── chat.py            # ChatAdmin, MessageAdmin, MessageInline classes
+├── models/
+│   ├── __init__.py        # Exports Chat, Message
+│   ├── chat.py            # Chat model (user-owned conversations)
+│   └── message.py         # Message model (individual messages in chats)
+├── templates/chats/       # Chat UI templates (Phase 2.1)
+├── tests/
+│   ├── __init__.py
+│   ├── test_chat.py       # Chat model tests
+│   └── test_message.py    # Message model tests
+├── migrations/            # Django auto-generated migrations
+├── apps.py                # App configuration
+├── models.py              # Imports models (top-level)
+└── urls.py                # URL routing for chats (Phase 2.1)
+```
