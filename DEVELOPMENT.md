@@ -533,3 +533,209 @@ python aiiabox/manage.py test apps.profiles.tests.forms.test_settings_form.UserS
 - Add project field to Chat model
 - Populate UserSettings.default_project
 - Implement project-level settings via JSONField
+
+## API Authentication (Phase 2.2 - Issue #25)
+
+### Refactored Architecture (Issue #25 - Focused Modules)
+
+The monolithic `apps.api` app has been refactored into focused, single-responsibility modules following CLAUDE.md principles:
+
+- **`apps.auth`** - Authentication functionality (tokens, signals, views, serializers)
+- **`apps.permissions`** - Permission classes and logic
+
+This refactoring improves maintainability, testability, and follows orthogonal system design principles.
+
+### Token-Based Authentication
+
+The API uses Django REST Framework's TokenAuthentication for programmatic access.
+
+#### Setup
+
+- DRF configured in `config/settings.py`
+- Token model: `rest_framework.authtoken.models.Token`
+- Tokens auto-created when users are created via signal in `apps.auth.signals.auth.create_auth_token`
+
+#### Getting Your Token
+
+**Option 1: Retrieve in Admin**
+
+1. Login to `/admin/`
+2. Navigate to "Tokens" under "Auth Token" section
+3. View your token (masked as `XXXXXXXXX...XXXXXXXXX`)
+
+**Option 2: API Endpoint (requires authentication)**
+
+Logged-in users can retrieve their token:
+
+```bash
+# With session authentication (browser)
+curl -X GET http://localhost:8000/api/auth/token/ \
+  -H "Cookie: sessionid=YOUR_SESSION_ID"
+
+# Response:
+{
+  "token": "1234567890abcdef1234567890abcdef12345678",
+  "created": "2025-01-15T10:30:00Z"
+}
+```
+
+#### Using Your Token
+
+**HTTP Header Format:**
+
+```
+Authorization: Token YOUR_TOKEN_HERE
+```
+
+**Example Requests:**
+
+```bash
+# Get your token (verify authentication works)
+curl -X GET http://localhost:8000/api/auth/token/ \
+  -H "Authorization: Token 1234567890abcdef1234567890abcdef12345678"
+
+# With Python requests
+import requests
+headers = {
+    "Authorization": "Token 1234567890abcdef1234567890abcdef12345678"
+}
+response = requests.get("http://localhost:8000/api/auth/token/", headers=headers)
+```
+
+**With VSCode Plugin/CLI (Phase 7-8):**
+
+```yaml
+# ~/.aiia/config.yaml
+api:
+  url: http://localhost:8000
+  token: 1234567890abcdef1234567890abcdef12345678
+```
+
+#### Token Security
+
+- **Storage:** Keep tokens in environment variables or config files, never in code
+- **Transmission:** Always use HTTPS in production (Bearer Token over HTTP is insecure)
+- **Rotation:** Delete token in admin to revoke access
+- **Expiration:** No built-in expiration (tokens valid until deleted)
+
+#### API Endpoints (Phase 2+)
+
+| Endpoint                    | Method | Auth     | Description                 |
+| --------------------------- | ------ | -------- | --------------------------- |
+| `/api/auth/token/`          | GET    | Required | Get current user's token    |
+| `/api/chats/`               | GET    | Required | List user's chats (Phase 2) |
+| `/api/chats/`               | POST   | Required | Create new chat (Phase 2)   |
+| `/api/chats/{id}/`          | GET    | Required | Get chat detail (Phase 2)   |
+| `/api/chats/{id}/messages/` | POST   | Required | Add message (Phase 2)       |
+
+#### Permission Classes
+
+All API endpoints use these permission classes by default:
+
+- `IsAuthenticated` - User must provide valid token
+- Can override per-endpoint with custom classes like `apps.permissions.permissions.IsOwnerOrReadOnly`
+
+#### Benefits of Focused Module Architecture
+
+- **Single Responsibility:** Each module has one clear purpose
+- **Orthogonal Design:** Modules are independent and loosely coupled
+- **Better Testability:** Focused modules are easier to test in isolation (13 total tests)
+- **Maintainability:** Changes to one module don't affect others
+- **Scalability:** Easy to extend each module independently
+- **Django Compatibility:** Resolved app label conflicts with built-in `auth` app
+
+#### Admin Token Management
+
+**Location:** `/admin/authtoken/token/`
+
+**Features:**
+
+- **List View:** Shows all tokens with user, masked token, and creation date
+- **Detail View:** Shows full token (read-only), user, and creation timestamp
+- **Search:** Find tokens by username, email, first name, or last name
+- **Filters:** Filter by creation date
+- **Delete:** Revoke access by deleting token
+- **Regenerate:** Delete and make next API request to auto-create new token
+
+**Permissions:**
+
+- Only admin/staff can view tokens
+- Manual token creation is disabled (auto-created via signal)
+- Staff can delete tokens to revoke access
+
+#### Testing Token Auth
+
+```bash
+# Test with valid token
+curl -X GET http://localhost:8000/api/auth/token/ \
+  -H "Authorization: Token YOUR_TOKEN"
+# Response: 200 OK with token data
+
+# Test without token
+curl -X GET http://localhost:8000/api/auth/token/
+# Response: 401 Unauthorized
+
+# Test with invalid token
+curl -X GET http://localhost:8000/api/auth/token/ \
+  -H "Authorization: Token invalid123"
+# Response: 401 Unauthorized
+```
+
+#### Troubleshooting
+
+**401 Unauthorized - "Authentication credentials were not provided"**
+
+- Missing `Authorization` header
+- Token not in header (check spacing and format)
+
+**401 Unauthorized - "Invalid token"**
+
+- Token is invalid/malformed
+- Token was deleted (revoked)
+- Token belongs to deleted user
+
+**Token endpoint returns 200 but claims it's unauthenticated**
+
+- Check that `rest_framework.authentication.TokenAuthentication` is configured
+- Verify token is valid in admin
+- Check `DEFAULT_AUTHENTICATION_CLASSES` in settings.py
+
+#### App Structure
+
+**Authentication Module (`apps.auth/`):**
+
+```
+apps/auth/
+├── admin.py               # TokenAdmin for admin interface
+├── apps.py                # App config with signal registration (label: 'apps_auth')
+├── models.py              # Uses DRF's built-in Token model
+├── serializers/
+│   ├── __init__.py        # Exports TokenSerializer
+│   └── auth.py            # TokenSerializer for responses
+├── signals/
+│   ├── __init__.py        # Exports create_auth_token
+│   └── auth.py            # Auto-create token on user creation
+├── urls.py                # Auth endpoint routing (/api/auth/token/)
+├── views/
+│   ├── __init__.py        # Exports TokenView
+│   └── auth.py            # TokenView for token retrieval
+└── tests/
+    ├── __init__.py        # Exports test classes
+    └── auth.py            # Token signal, view, serializer tests (7 tests)
+```
+
+**Permissions Module (`apps.permissions/`):**
+
+```
+apps/permissions/
+├── admin.py               # Empty (permissions are code-only)
+├── apps.py                # App configuration
+├── models.py              # Empty (permissions are code-only)
+├── permissions/
+│   ├── __init__.py        # Exports IsOwnerOrReadOnly
+│   └── base.py            # IsOwnerOrReadOnly permission class
+├── urls.py                # Empty (permissions used by other views)
+└── tests/
+    ├── __init__.py        # Exports test classes
+    └── permissions.py     # Permission class tests (6 tests)
+```
