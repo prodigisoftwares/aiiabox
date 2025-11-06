@@ -41,10 +41,10 @@ class MessageAdmin(admin.ModelAdmin):
 
     def chat_display(self, obj):  # pragma: no cover
         """
-        Display parent chat title as a clickable admin link.
+        Display parent chat title for easy identification.
 
-        Shows the chat title and provides easy navigation to the parent chat
-        in the admin interface.
+        Shows the chat title in the admin list view for quick reference
+        to the parent conversation.
         """
         return obj.chat.title
 
