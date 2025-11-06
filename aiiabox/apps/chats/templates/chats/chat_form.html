@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Create Chat" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+      {# Page header #}
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
+          {% trans "New Chat" %}
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          {% trans "Start a conversation by giving your chat a title." %}
+        </p>
+      </div>
+
+      {# Chat creation form #}
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        {# Form non-field errors #}
+        {% if form.non_field_errors %}
+          <div class="p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
+            {% for error in form.non_field_errors %}
+              <p class="text-sm text-red-800 dark:text-red-200">
+                {{ error }}
+              </p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {# Title field #}
+        <div>
+          <label for="{{ form.title.id_for_label }}"
+                 class="block text-sm font-medium text-gray-900 dark:text-gray-50 mb-2">
+            {% trans "Chat Title" %}
+            <span class="text-red-600 dark:text-red-400" aria-label="required">*</span>
+          </label>
+          <input type="text"
+                 name="{{ form.title.name }}"
+                 id="{{ form.title.id_for_label }}"
+                 class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200
+                        {% if form.title.errors %}
+                          border-red-500 dark:border-red-600
+                        {% endif %}"
+                 placeholder="{% trans "e.g., Python Questions, Project Ideas..." %}"
+                 maxlength="255"
+                 required>
+          {% if form.title.errors %}
+            <div class="mt-2">
+              {% for error in form.title.errors %}
+                <p class="text-sm text-red-600 dark:text-red-400">
+                  {{ error }}
+                </p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {# Form actions #}
+        <div class="flex gap-3 pt-4">
+          <button type="submit"
+                  class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+            {% trans "Create Chat" %}
+          </button>
+          <a href="{% url 'chats:chat_list' %}"
+             class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-50 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+            {% trans "Cancel" %}
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock content %}

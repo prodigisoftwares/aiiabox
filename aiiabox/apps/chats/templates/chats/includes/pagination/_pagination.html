@@ -1,0 +1,71 @@
+{% comment %}
+Pagination component for list views.
+
+Parameters:
+- page_obj: Django Page object (required)
+- paginator: Django Paginator object (required)
+- base_url: Base URL for pagination links (optional, defaults to current page)
+{% endcomment %}
+
+{% load i18n %}
+{% trans "First page" as first_page_label %}
+{% trans "Previous page" as previous_page_label %}
+{% trans "Next page" as next_page_label %}
+{% trans "Last page" as last_page_label %}
+
+{% if is_paginated %}
+  <nav class="mt-8 flex items-center justify-between"
+       aria-label="Pagination">
+    <div class="text-sm text-gray-600 dark:text-gray-400">
+      {% blocktrans with current=page_obj.number total=paginator.num_pages %}
+        Page {{ current }} of {{ total }}
+      {% endblocktrans %}
+    </div>
+
+    <div class="flex gap-2">
+      {# Previous button #}
+      {% if page_obj.has_previous %}
+        <a href="?page=1"
+           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+           aria-label="{{ first_page_label }}">
+          {% trans "First" %}
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+           aria-label="{{ previous_page_label }}">
+          {% trans "Previous" %}
+        </a>
+      {% endif %}
+
+      {# Page numbers #}
+      <div class="flex items-center gap-1">
+        {% for num in paginator.page_range %}
+          {% if num == page_obj.number %}
+            <span class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+              {{ num }}
+            </span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}"
+               class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+              {{ num }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {# Next button #}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+           aria-label="{{ next_page_label }}">
+          {% trans "Next" %}
+        </a>
+        <a href="?page={{ paginator.num_pages }}"
+           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+           aria-label="{{ last_page_label }}">
+          {% trans "Last" %}
+        </a>
+      {% endif %}
+    </div>
+  </nav>
+{% endif %}

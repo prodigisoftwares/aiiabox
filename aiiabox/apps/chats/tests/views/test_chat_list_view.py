@@ -69,3 +69,80 @@ class ChatListViewTests(TestCase):
 
         # chat3 was created last, should be first
         self.assertEqual(chats_list[0].pk, self.chat3.pk)
+
+    def test_get_context_data_with_chats(self):
+        """get_context_data() provides correct context variables when user has chats."""
+        self.client.login(username="testuser1", password="testpass123")
+        response = self.client.get(reverse("chats:chat_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check page header context
+        self.assertEqual(response.context["page_title"], "Chats")
+
+        # Check action button context
+        self.assertEqual(response.context["action_url"], reverse("chats:chat_create"))
+        self.assertEqual(response.context["action_text"], "New Chat")
+
+        # Check empty state context (should still be present even with chats)
+        self.assertEqual(response.context["empty_title"], "No chats yet")
+        self.assertEqual(
+            response.context["empty_description"],
+            "Start a conversation by creating your first chat.",
+        )
+
+        # Check page description for non-paginated case (3 chats < 20)
+        self.assertEqual(response.context["page_description"], "3 chats")
+
+    def test_get_context_data_with_no_chats(self):
+        """get_context_data() provides correct context variables when user has no chats."""
+        # Create a user with no chats
+        User.objects.create_user(
+            username="user_no_chats", email="nochats@test.com", password="testpass123"
+        )
+
+        self.client.login(username="user_no_chats", password="testpass123")
+        response = self.client.get(reverse("chats:chat_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check page description for empty case
+        self.assertEqual(response.context["page_description"], "0 chats")
+
+    def test_get_context_data_singular_chat_count(self):
+        """get_context_data() uses singular form for single chat."""
+        # Create a user with only one chat
+        user_single_chat = User.objects.create_user(
+            username="user_single", email="single@test.com", password="testpass123"
+        )
+        Chat.objects.create(user=user_single_chat, title="Single Chat")
+
+        self.client.login(username="user_single", password="testpass123")
+        response = self.client.get(reverse("chats:chat_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check page description uses singular form
+        self.assertEqual(response.context["page_description"], "1 chat")
+
+    def test_get_context_data_with_paginated_chats(self):
+        """get_context_data() provides correct context variables when chats are paginated."""
+        # Create a user with more than 20 chats to trigger pagination
+        user_many_chats = User.objects.create_user(
+            username="user_many", email="many@test.com", password="testpass123"
+        )
+
+        # Create 25 chats (more than paginate_by=20)
+        for i in range(25):
+            Chat.objects.create(user=user_many_chats, title=f"Chat {i+1}")
+
+        self.client.login(username="user_many", password="testpass123")
+        response = self.client.get(reverse("chats:chat_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check that pagination is active
+        self.assertTrue(response.context["is_paginated"])
+
+        # Check page description for paginated case (uses paginator.count)
+        self.assertEqual(response.context["page_description"], "25 chats")

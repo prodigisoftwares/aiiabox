@@ -1,0 +1,29 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Chats" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-4xl mx-auto">
+      {% comment %}Page header with title, description, and action button{% endcomment %}
+      {% include "chats/includes/header/_page_header.html" with title=page_title description=page_description action_url=action_url action_text=action_text %}
+
+      {% comment %}Chat list or empty state{% endcomment %}
+      {% if chats %}
+        <div class="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+          {% for chat in chats %}
+            {% include "chats/includes/_chat_item.html" %}
+          {% endfor %}
+        </div>
+
+        {% comment %}Pagination navigation{% endcomment %}
+        {% include "chats/includes/pagination/_pagination.html" %}
+      {% else %}
+        {% include "chats/includes/empty_states/_empty_chats.html" with title=empty_title description=empty_description action_url=action_url action_text=action_text %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}
