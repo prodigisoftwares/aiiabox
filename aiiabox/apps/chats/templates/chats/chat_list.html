@@ -1,0 +1,121 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% trans "Chats" %}
+{% endblock title %}
+
+{% block content %}
+  <div class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-4xl mx-auto">
+      {# Page header #}
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-50">
+            {% trans "Chats" %}
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-1">
+            {% if is_paginated %}
+              {% blocktrans count counter=paginator.count %}
+                {{ counter }} chat
+              {% plural %}
+                {{ counter }} chats
+              {% endblocktrans %}
+            {% else %}
+              {% blocktrans count counter=chats|length %}
+                {{ counter }} chat
+              {% plural %}
+                {{ counter }} chats
+              {% endblocktrans %}
+            {% endif %}
+          </p>
+        </div>
+        <a href="{% url 'chats:chat_create' %}"
+           class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+          {% trans "New Chat" %}
+        </a>
+      </div>
+
+      {# Chat list #}
+      {% if chats %}
+        <div class="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+          {% for chat in chats %}
+            {% include "chats/includes/_chat_item.html" %}
+          {% endfor %}
+        </div>
+
+        {# Pagination #}
+        {% if is_paginated %}
+          <nav class="mt-8 flex items-center justify-between"
+               aria-label="Pagination">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+              {% blocktrans with current=page_obj.number total=paginator.num_pages %}
+                Page {{ current }} of {{ total }}
+              {% endblocktrans %}
+            </div>
+
+            <div class="flex gap-2">
+              {# Previous button #}
+              {% if page_obj.has_previous %}
+                <a href="?page=1"
+                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                   aria-label="First page">
+                  {% trans "First" %}
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}"
+                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                   aria-label="Previous page">
+                  {% trans "Previous" %}
+                </a>
+              {% endif %}
+
+              {# Page numbers #}
+              <div class="flex items-center gap-1">
+                {% for num in paginator.page_range %}
+                  {% if num == page_obj.number %}
+                    <span class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+                      {{ num }}
+                    </span>
+                  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}"
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                      {{ num }}
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              {# Next button #}
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}"
+                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                   aria-label="Next page">
+                  {% trans "Next" %}
+                </a>
+                <a href="?page={{ paginator.num_pages }}"
+                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-50 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                   aria-label="Last page">
+                  {% trans "Last" %}
+                </a>
+              {% endif %}
+            </div>
+          </nav>
+        {% endif %}
+      {% else %}
+        {# Empty state #}
+        <div class="text-center py-12">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-2">
+            {% trans "No chats yet" %}
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">
+            {% trans "Start a conversation by creating your first chat." %}
+          </p>
+          <a href="{% url 'chats:chat_create' %}"
+             class="inline-block px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+            {% trans "Create Chat" %}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}
