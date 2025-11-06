@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.profiles",
     "apps.projects",
-    "apps.api",
+    "apps.auth",
+    "apps.permissions",
 ]
 
 MIDDLEWARE = [

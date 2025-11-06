@@ -20,4 +20,6 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return request.user and request.user.is_authenticated
 
         # Write permissions are only allowed to the owner of the object
-        return obj.user == request.user or obj.owner == request.user
+        # Check both 'user' and 'owner' attributes for flexibility
+        owner = getattr(obj, "user", None) or getattr(obj, "owner", None)
+        return owner == request.user

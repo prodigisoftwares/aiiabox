@@ -1,5 +1,5 @@
 """
-Signal handlers for API app.
+Signal handlers for Auth app.
 
 Auto-creates authentication tokens for new users.
 """

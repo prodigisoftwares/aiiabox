@@ -1,12 +1,12 @@
 """
-Tests for API authentication functionality.
+Tests for Auth app authentication functionality.
 
 Only tests custom code - does NOT test Django or DRF framework behavior.
 
 Covers:
 - Token auto-creation signal
 - Custom view logic (get_or_create)
-- Permission classes
+- Token serialization
 """
 
 from django.contrib.auth.models import User
@@ -116,7 +116,7 @@ class TokenSerializerTestCase(TestCase):
         )
         token_obj = Token.objects.get(user=user)
 
-        from apps.api.serializers import TokenSerializer
+        from apps.auth.serializers import TokenSerializer
 
         serializer = TokenSerializer(token_obj)
 
@@ -133,7 +133,7 @@ class TokenSerializerTestCase(TestCase):
         )
         token = Token.objects.get(user=user)
 
-        from apps.api.serializers import TokenSerializer
+        from apps.auth.serializers import TokenSerializer
 
         serializer = TokenSerializer(token)
 
