@@ -17,17 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `djangorestframework` dependency to `pyproject.toml`
   - Configured DRF in `config/settings.py` with token auth settings
   - Added `rest_framework` and `rest_framework.authtoken` to INSTALLED_APPS
-- New `apps/api/` Django app for API authentication
-  - `apps/api/apps.py` - App configuration with signal registration
-  - `apps/api/models.py` - Uses DRF's built-in Token model
-  - `apps/api/serializers.py` - TokenSerializer for API responses
-  - `apps/api/views.py` - TokenView for token retrieval/creation
-  - `apps/api/permissions.py` - IsOwnerOrReadOnly permission class
-  - `apps/api/urls.py` - API endpoint routing with `api:` namespace
-  - `apps/api/admin.py` - TokenAdmin for token management in admin interface
+- New `apps/auth/` Django app for API token authentication
+  - `apps/auth/apps.py` - App configuration with signal registration
+  - `apps/auth/models.py` - Uses DRF's built-in Token model
+  - `apps/auth/serializers.py` - TokenSerializer for API responses
+  - `apps/auth/views.py` - TokenView for token retrieval/creation
+  - `apps/auth/urls.py` - API endpoint routing with `auth:` namespace
+  - `apps/auth/admin.py` - TokenAdmin for token management in admin interface
+  - `apps/auth/tests/` - Comprehensive token authentication tests
+- New `apps/permissions/` Django app for API permission classes
+  - `apps/permissions/permissions.py` - IsOwnerOrReadOnly permission class
+  - `apps/permissions/tests/` - Permission class tests
 - Token auto-creation signal
-  - `apps/api/signals.py` - Auto-creates Token when User is created
-  - Registered in `ApiConfig.ready()` method
+  - `apps/auth/signals.py` - Auto-creates Token when User is created
+  - Registered in `AuthConfig.ready()` method
   - Ensures every user has an API token
 - API token endpoint
   - `GET /api/auth/token/` - Requires authentication, returns user's token
@@ -41,24 +44,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Disabled manual token creation (auto-created via signal)
   - Allows deletion to revoke API access
   - Searchable by username, email, first_name, last_name
-- Token-based API permission class
-  - `IsOwnerOrReadOnly` - Users can only access/modify their own resources
-  - Read-only access for authenticated users
-  - Write access restricted to resource owner
-  - Supports both `user` and `owner` field names
 - Comprehensive test suite (16 tests, 100% pass rate)
-  - `apps/api/tests/test_auth.py` - Token signal, view, and serializer tests
-  - `apps/api/tests/test_permissions.py` - Permission class tests
+  - Token signal, view, and serializer tests
+  - Permission class tests
   - Tests for:
     - Token auto-creation on user creation
     - Unique tokens per user
     - Token get_or_create logic in view
     - Serializer field validation
     - Permission enforcement (read/write access control)
+  - All tests follow CLAUDE.md principle: only tests custom business logic
 
 **Updated**
 
-- `config/urls.py` - Added API URL routing with `path("api/", include("apps.api.urls"))`
+- `config/urls.py` - Added API URL routing with `path("api/", include("apps.auth.urls"))`
+- `config/settings.py` - Added both `apps.auth` and `apps.permissions` to INSTALLED_APPS
 - `config/settings.py` - Added DRF configuration:
   ```python
   REST_FRAMEWORK = {
@@ -88,14 +88,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Token deletion revokes API access
 - Next API request after deletion will create new token
 
-**Testing**
+**App Structure (Refactored)**
 
-- Signal handler tests verify auto-creation and uniqueness
-- View logic tests verify get_or_create behavior
-- Serializer tests verify correct fields exposed
-- Permission tests verify read/write access control
-- All tests follow CLAUDE.md principle: "DO NOT TEST EXTERNAL CODE"
-- Only custom business logic is tested, not DRF/Django framework
+Following CLAUDE.md orthogonal systems principle:
+
+- `apps/auth/` - Focused on token authentication
+- `apps/permissions/` - Focused on authorization/permission logic
+- Loose coupling allows independent evolution and testing
+- Clear separation of concerns: authentication vs authorization
 
 **Notes**
 
@@ -104,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin can view token previews and revoke access
 - TokenAdmin prevents manual token creation (must be auto-created)
 - Backward compatible - session auth still works for web interface
+- Refactored into separate apps for better orthogonality and maintainability
 
 ### Phase 1: Foundation & Authentication
 
