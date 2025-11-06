@@ -7,6 +7,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 2: Chat System Core
+
+#### Issue #25: API Authentication & Token Management
+
+**Added**
+
+- Django REST Framework (DRF) integration with TokenAuthentication
+  - Added `djangorestframework` dependency to `pyproject.toml`
+  - Configured DRF in `config/settings.py` with token auth settings
+  - Added `rest_framework` and `rest_framework.authtoken` to INSTALLED_APPS
+- New `apps/api/` Django app for API authentication
+  - `apps/api/apps.py` - App configuration with signal registration
+  - `apps/api/models.py` - Uses DRF's built-in Token model
+  - `apps/api/serializers.py` - TokenSerializer for API responses
+  - `apps/api/views.py` - TokenView for token retrieval/creation
+  - `apps/api/permissions.py` - IsOwnerOrReadOnly permission class
+  - `apps/api/urls.py` - API endpoint routing with `api:` namespace
+  - `apps/api/admin.py` - TokenAdmin for token management in admin interface
+- Token auto-creation signal
+  - `apps/api/signals.py` - Auto-creates Token when User is created
+  - Registered in `ApiConfig.ready()` method
+  - Ensures every user has an API token
+- API token endpoint
+  - `GET /api/auth/token/` - Requires authentication, returns user's token
+  - Returns `{ "token": "...", "created": "2025-..." }` JSON
+  - Auto-creates token if deleted (via get_or_create logic)
+- TokenAdmin in Django admin
+  - `/admin/authtoken/token/` - List all user tokens
+  - `user_display()` - Shows user with full name if available
+  - `token_preview()` - Shows masked token (first 10 + ... + last 10)
+  - `token_display()` - Shows full token in detail view (read-only)
+  - Disabled manual token creation (auto-created via signal)
+  - Allows deletion to revoke API access
+  - Searchable by username, email, first_name, last_name
+- Token-based API permission class
+  - `IsOwnerOrReadOnly` - Users can only access/modify their own resources
+  - Read-only access for authenticated users
+  - Write access restricted to resource owner
+  - Supports both `user` and `owner` field names
+- Comprehensive test suite (16 tests, 100% pass rate)
+  - `apps/api/tests/test_auth.py` - Token signal, view, and serializer tests
+  - `apps/api/tests/test_permissions.py` - Permission class tests
+  - Tests for:
+    - Token auto-creation on user creation
+    - Unique tokens per user
+    - Token get_or_create logic in view
+    - Serializer field validation
+    - Permission enforcement (read/write access control)
+
+**Updated**
+
+- `config/urls.py` - Added API URL routing with `path("api/", include("apps.api.urls"))`
+- `config/settings.py` - Added DRF configuration:
+  ```python
+  REST_FRAMEWORK = {
+      "DEFAULT_AUTHENTICATION_CLASSES": [
+          "rest_framework.authentication.TokenAuthentication",
+      ],
+      "DEFAULT_PERMISSION_CLASSES": [
+          "rest_framework.permissions.IsAuthenticated",
+      ],
+  }
+  ```
+
+**Database**
+
+- DRF TokenAuthentication migrations applied
+  - `authtoken.0001_initial` - Creates `authtoken_token` table
+  - `authtoken.0002_auto_20160226_1747` - Auto-migration
+  - `authtoken.0003_tokenproxy` - Token proxy model
+  - `authtoken.0004_alter_tokenproxy_options` - Options update
+
+**Technical Details**
+
+- Token format: 40-character hex string (DRF standard)
+- Token tied to User model via OneToOne relationship
+- Auto-created immediately when user is created via signal
+- Idempotent token endpoint (returns same token on multiple calls)
+- Token deletion revokes API access
+- Next API request after deletion will create new token
+
+**Testing**
+
+- Signal handler tests verify auto-creation and uniqueness
+- View logic tests verify get_or_create behavior
+- Serializer tests verify correct fields exposed
+- Permission tests verify read/write access control
+- All tests follow CLAUDE.md principle: "DO NOT TEST EXTERNAL CODE"
+- Only custom business logic is tested, not DRF/Django framework
+
+**Notes**
+
+- Ready for Phase 7 (VSCode Plugin) and Phase 8 (CLI) which need token auth
+- Tokens stored securely in database (not in code/config)
+- Admin can view token previews and revoke access
+- TokenAdmin prevents manual token creation (must be auto-created)
+- Backward compatible - session auth still works for web interface
+
 ### Phase 1: Foundation & Authentication
 
 #### Issue #8: Error Pages (404 & 500)
