@@ -449,6 +449,77 @@ python aiiabox/manage.py test apps.profiles.tests.forms.test_settings_form.UserS
   - Theme must be a valid choice from THEME_CHOICES
   - Theme is a required field
 
+### Chat Views (Phase 2.4a - Issue #37)
+
+#### ChatListView
+
+- **URL:** `/chats/`
+- **Name:** `chats:chat_list`
+- **Class:** `apps.chats.views.ChatListView`
+- **Authentication:** LoginRequiredMixin (redirects to login if not authenticated)
+- **Behavior:**
+  - GET: Shows paginated list of current user's chats (20 per page)
+  - Chats ordered by most recently updated first
+  - Returns empty list if user has no chats
+- **Authorization:** Queryset filtered by `request.user` (user can only see own chats)
+- **Pagination:** 20 chats per page via `paginate_by = 20`
+- **Template:** `chats/chat_list.html`
+
+#### ChatDetailView
+
+- **URL:** `/chats/<pk>/`
+- **Name:** `chats:chat_detail`
+- **Class:** `apps.chats.views.ChatDetailView`
+- **Authentication:** LoginRequiredMixin (redirects to login if not authenticated)
+- **Behavior:**
+  - GET: Shows chat detail with all messages
+  - Returns 404 if chat doesn't exist or belongs to another user
+- **Authorization:** Queryset filtered by `request.user` (prevents accessing other users' chats)
+- **Template:** `chats/chat_detail.html`
+
+#### ChatCreateView
+
+- **URL:** `/chats/create/`
+- **Name:** `chats:chat_create`
+- **Class:** `apps.chats.views.ChatCreateView`
+- **Form:** `ChatForm`
+- **Model:** `Chat`
+- **Authentication:** LoginRequiredMixin (redirects to login if not authenticated)
+- **Behavior:**
+  - GET: Shows chat creation form with title field
+  - POST (valid): Creates chat and redirects to chat detail page
+  - POST (invalid): Re-renders form with validation errors
+- **Authorization:** `form_valid()` auto-assigns `chat.user = request.user` (prevents user spoofing)
+- **Template:** `chats/chat_form.html`
+
+#### ChatDeleteView
+
+- **URL:** `/chats/<pk>/delete/`
+- **Name:** `chats:chat_delete`
+- **Class:** `apps.chats.views.ChatDeleteView`
+- **Model:** `Chat`
+- **Authentication:** LoginRequiredMixin (redirects to login if not authenticated)
+- **Behavior:**
+  - GET: Shows deletion confirmation page
+  - POST: Deletes chat and redirects to chat list
+  - Returns 404 if chat doesn't exist or belongs to another user
+- **Authorization:** Queryset filtered by `request.user` (prevents deleting other users' chats)
+- **Template:** `chats/chat_confirm_delete.html`
+
+### ChatForm
+
+- **Location:** `apps.chats.forms.ChatForm`
+- **Model:** `Chat`
+- **Fields:**
+  - `title` (CharField) - Required, max_length=255
+- **Validation:**
+  - Title is required
+  - Title cannot exceed 255 characters
+  - Title is trimmed of leading/trailing whitespace
+  - Title cannot be empty or whitespace-only after trimming
+- **Widget Customization:**
+  - Title: TextInput with Tailwind CSS classes, placeholder "Chat title...", maxlength="255"
+
 ## Admin Interface
 
 ### UserProfile Admin

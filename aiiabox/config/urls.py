@@ -27,6 +27,7 @@ urlpatterns = [
     path("api/auth/", include("apps.auth.urls")),
     path("", include("apps.core.urls")),
     path("", include("apps.profiles.urls")),
+    path("chats/", include("apps.chats.urls")),
 ]
 
 # Error handlers

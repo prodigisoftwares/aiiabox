@@ -105,6 +105,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test coverage at 100% (52/52 tests passing, all code paths covered)
 - Models are fully documented with docstrings explaining assumptions and contracts
 
+#### Issue #37: Chat Views & Forms - Backend Layer
+
+**Added**
+
+- Django views for chat CRUD operations (`apps/chats/views/chat.py`)
+  - `ChatListView` - ListView with pagination (20 per page)
+    - Filters chats to current user only
+    - Enforces LoginRequiredMixin
+    - Ordered by most recently updated first
+  - `ChatDetailView` - DetailView for single chat display
+    - Filters to current user's chats (returns 404 for unauthorized access)
+    - Enforces LoginRequiredMixin
+  - `ChatCreateView` - CreateView for new chat creation
+    - Uses ChatForm for title validation
+    - Auto-assigns chat.user to request.user in form_valid()
+    - Redirects to chat detail page on success
+    - Enforces LoginRequiredMixin
+  - `ChatDeleteView` - DeleteView with confirmation
+    - Filters to current user's chats (returns 404 for unauthorized access)
+    - Redirects to chat list on success
+    - Enforces LoginRequiredMixin
+- ChatForm for chat creation/editing (`apps/chats/forms.py`)
+  - Title field (required, max_length=255)
+  - Whitespace trimming validation in clean_title()
+  - Rejects empty or whitespace-only titles
+  - Tailwind CSS styling via widget attributes
+- URL routing (`apps/chats/urls.py`)
+  - `chats:chat_list` - `/chats/`
+  - `chats:chat_detail` - `/chats/<pk>/`
+  - `chats:chat_create` - `/chats/create/`
+  - `chats:chat_delete` - `/chats/<pk>/delete/`
+- Comprehensive test suite (26 view tests + 8 form tests = 34 new tests)
+  - ChatListView tests
+    - Authentication requirement (LoginRequiredMixin)
+    - Queryset filtering by current user
+    - Empty queryset for users with no chats
+    - Pagination configuration (20 per page)
+    - Model ordering (newest first)
+  - ChatDetailView tests
+    - Authentication requirement
+    - Queryset filtering by current user
+    - 404 when accessing other user's chat
+    - 404 for non-existent chat
+  - ChatCreateView tests
+    - Authentication requirement
+    - Form class is ChatForm
+    - Creates chat with valid title
+    - Auto-assigns chat.user to request.user
+    - Form validation (empty title, whitespace trimming)
+  - ChatDeleteView tests
+    - Authentication requirement
+    - Queryset filtering by current user
+    - 404 when accessing other user's chat
+    - Deletes only specified chat
+    - success_url is chat_list
+  - ChatForm tests
+    - Valid form with proper title
+    - Required title field
+    - Max length 255 characters
+    - Whitespace trimming
+    - Special characters and unicode support
+
+**Updated**
+
+- `config/urls.py` - Added `path("chats/", include("apps.chats.urls"))` to urlpatterns
+- `apps/chats/views/__init__.py` - Created with clean exports for all 4 views
+
+**Technical Details**
+
+- All views use `get_queryset()` to filter chats by `request.user`
+- Authorization checks prevent users from accessing/modifying other users' chats
+- Form validation in `clean_title()` ensures titles are non-empty after trimming
+- Views follow class-based view best practices (LoginRequiredMixin, proper method overrides)
+- Comprehensive docstrings on all views explaining assumptions and contracts
+- Test coverage: 34/34 new tests passing (100%), no regressions
+- Tests focus on custom authorization logic (not Django built-ins)
+- Views are focused and readable (under 50 lines each)
+
+**Dependencies**
+
+- Depends on: #24 (Chat/Message models)
+- Blocks: #27b (templates), #27c (message handling)
+
 #### Issue #26: Admin Interface Enhancements
 
 **Added**
