@@ -397,3 +397,18 @@ class MessageModelTests(TestCase):
         # Verify token counts
         total_tokens = sum(msg.tokens for msg in messages)
         self.assertEqual(total_tokens, 95)
+
+    def test_message_tokens_cannot_be_negative(self):
+        """Test that tokens cannot be negative due to MinValueValidator."""
+        from django.core.exceptions import ValidationError
+
+        message = Message(
+            chat=self.chat,
+            user=self.user,
+            content="Message with negative tokens",
+            role="user",
+            tokens=-1,  # Invalid negative value
+        )
+
+        with self.assertRaises(ValidationError):
+            message.full_clean()  # This triggers model validation

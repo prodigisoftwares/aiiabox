@@ -31,10 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `chat` (ForeignKey) - Parent chat with cascading delete
   - `user` (ForeignKey) - Message author
   - `content` (TextField) - Message content (supports long text)
-  - `role` (CharField, choices=['user', 'assistant', 'system']) - Message role for LLM conversation
-  - `tokens` (IntegerField, default=0) - Token count for cost tracking
+  - `role` (CharField, choices=['user', 'assistant', 'system'], db_index=True) - Message role for LLM conversation
+  - `tokens` (IntegerField, default=0, validators=[MinValueValidator(0)]) - Token count for cost tracking
   - `created_at` (DateTimeField, auto_now_add=True) - Message timestamp
-  - Database indexes on `(chat, created_at)` and `(user, created_at)` for efficient queries
+  - Database indexes on `(chat, created_at)`, `(user, created_at)`, and `(role)` for efficient queries
   - Default ordering by `created_at` ascending (chronological)
   - Docstring with assumptions and contract documentation
 - Admin interface (`apps/chats/admin/chat.py`)
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (`apps/chats/migrations/0001_initial.py`)
   - Creates `chats_chat` and `chats_message` tables
   - Sets up all indexes for query optimization
-- Comprehensive test suite (51 tests, 100% coverage)
+- Comprehensive test suite (52 tests, 100% coverage)
   - ChatModelTests (25 tests)
     - Model creation with required and optional fields
     - Metadata storage and modification
@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Chat ordering and filtering
     - Cascading delete behavior
     - Queryset operations (filter, count, exists, bulk_create, get, update, delete)
-  - MessageModelTests (26 tests)
+  - MessageModelTests (27 tests)
     - Model creation with required and optional fields
     - Role validation (user/assistant/system)
     - Token counting and storage
@@ -86,13 +86,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Chat: `(user, -updated_at)` for user's chats ordered by recency
     - Message: `(chat, created_at)` for chat's messages in chronological order
     - Message: `(user, created_at)` for user's messages across chats
+    - Message: `(role)` for role-based filtering
 
 **Technical Details**
 
 - Models use string references for clarity and decoupling
 - JSONField for metadata enables future Phase 3 features (system_prompt, model_name, settings)
 - Message role choices enable LLM integration (user/assistant/system roles)
-- Token field prepares for cost tracking and context window management
+- Token field prepares for cost tracking and context window management (with MinValueValidator(0) for data integrity)
 - Cascading deletes ensure data integrity (delete chat → delete messages)
 - Database indexes optimize common query patterns
 - Models follow orthogonal systems principle - self-contained, no cross-app dependencies
@@ -101,7 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Models are foundational for Phase 2 API endpoints (CRUD operations)
 - Metadata field design allows storing model settings without schema migrations
-- Test coverage at 100% (51/51 tests passing, all code paths covered)
+- Test coverage at 100% (52/52 tests passing, all code paths covered)
 - Models are fully documented with docstrings explaining assumptions and contracts
 
 #### Issue #25: API Authentication & Token Management
