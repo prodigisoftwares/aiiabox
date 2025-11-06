@@ -536,6 +536,15 @@ python aiiabox/manage.py test apps.profiles.tests.forms.test_settings_form.UserS
 
 ## API Authentication (Phase 2.2 - Issue #25)
 
+### Refactored Architecture (Issue #25 - Focused Modules)
+
+The monolithic `apps.api` app has been refactored into focused, single-responsibility modules following CLAUDE.md principles:
+
+- **`apps.auth`** - Authentication functionality (tokens, signals, views, serializers)
+- **`apps.permissions`** - Permission classes and logic
+
+This refactoring improves maintainability, testability, and follows orthogonal system design principles.
+
 ### Token-Based Authentication
 
 The API uses Django REST Framework's TokenAuthentication for programmatic access.
@@ -544,7 +553,7 @@ The API uses Django REST Framework's TokenAuthentication for programmatic access
 
 - DRF configured in `config/settings.py`
 - Token model: `rest_framework.authtoken.models.Token`
-- Tokens auto-created when users are created via signal in `apps/api/signals.py`
+- Tokens auto-created when users are created via signal in `apps.auth.signals.auth.create_auth_token`
 
 #### Getting Your Token
 
@@ -624,7 +633,16 @@ api:
 All API endpoints use these permission classes by default:
 
 - `IsAuthenticated` - User must provide valid token
-- Can override per-endpoint with custom classes like `IsOwnerOrReadOnly`
+- Can override per-endpoint with custom classes like `apps.permissions.permissions.IsOwnerOrReadOnly`
+
+#### Benefits of Focused Module Architecture
+
+- **Single Responsibility:** Each module has one clear purpose
+- **Orthogonal Design:** Modules are independent and loosely coupled
+- **Better Testability:** Focused modules are easier to test in isolation (13 total tests)
+- **Maintainability:** Changes to one module don't affect others
+- **Scalability:** Easy to extend each module independently
+- **Django Compatibility:** Resolved app label conflicts with built-in `auth` app
 
 #### Admin Token Management
 
@@ -684,17 +702,40 @@ curl -X GET http://localhost:8000/api/auth/token/ \
 
 #### App Structure
 
+**Authentication Module (`apps.auth/`):**
+
 ```
-apps/api/
+apps/auth/
 ├── admin.py               # TokenAdmin for admin interface
-├── apps.py                # App config with signal registration
+├── apps.py                # App config with signal registration (label: 'apps_auth')
 ├── models.py              # Uses DRF's built-in Token model
-├── permissions.py         # IsOwnerOrReadOnly permission class
-├── serializers.py         # TokenSerializer for responses
-├── signals.py             # Auto-create token on user creation
-├── urls.py                # API endpoint routing
-├── views.py               # TokenView for token retrieval
+├── serializers/
+│   ├── __init__.py        # Exports TokenSerializer
+│   └── auth.py            # TokenSerializer for responses
+├── signals/
+│   ├── __init__.py        # Exports create_auth_token
+│   └── auth.py            # Auto-create token on user creation
+├── urls.py                # Auth endpoint routing (/api/auth/token/)
+├── views/
+│   ├── __init__.py        # Exports TokenView
+│   └── auth.py            # TokenView for token retrieval
 └── tests/
-    ├── test_auth.py       # Token signal, view, serializer tests
-    └── test_permissions.py # Permission class tests
+    ├── __init__.py        # Exports test classes
+    └── auth.py            # Token signal, view, serializer tests (7 tests)
+```
+
+**Permissions Module (`apps.permissions/`):**
+
+```
+apps/permissions/
+├── admin.py               # Empty (permissions are code-only)
+├── apps.py                # App configuration
+├── models.py              # Empty (permissions are code-only)
+├── permissions/
+│   ├── __init__.py        # Exports IsOwnerOrReadOnly
+│   └── base.py            # IsOwnerOrReadOnly permission class
+├── urls.py                # Empty (permissions used by other views)
+└── tests/
+    ├── __init__.py        # Exports test classes
+    └── permissions.py     # Permission class tests (6 tests)
 ```
