@@ -1,0 +1,24 @@
+{% comment %}
+Empty state component for when no items exist.
+
+Parameters:
+- title: Main heading text (required)
+- description: Description text (required)
+- action_url: URL for the action button (required)
+- action_text: Text for the action button (required)
+- action_classes: CSS classes for the action button (optional, defaults to primary button styling)
+{% endcomment %}
+
+{# Empty state #}
+<div class="text-center py-12">
+  <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-2">
+    {{ title }}
+  </h2>
+  <p class="text-gray-600 dark:text-gray-400 mb-6">
+    {{ description }}
+  </p>
+  <a href="{{ action_url }}"
+     class="{{ action_classes|default:'inline-block px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200' }}">
+    {{ action_text }}
+  </a>
+</div>
