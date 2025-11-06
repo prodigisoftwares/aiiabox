@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.profiles",
     "apps.projects",
+    "apps.chats",
     "apps.auth",
     "apps.permissions",
 ]
