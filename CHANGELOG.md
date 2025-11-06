@@ -9,6 +9,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Phase 2: Chat System Core
 
+#### Chat Models & Message Storage
+
+**Added**
+
+- New `apps/chats/` Django app for chat management and message storage
+  - Organized module structure following CLAUDE.md best practices
+  - `apps/chats/models/` - Focused model definitions
+  - `apps/chats/tests/` - Comprehensive test suite
+  - `apps/chats/admin/` - Django admin interface
+- Chat model (`apps/chats/models/chat.py`)
+  - `user` (ForeignKey) - Chat owner with cascading delete
+  - `title` (CharField, max_length=255) - Chat title
+  - `created_at` (DateTimeField, auto_now_add=True) - Creation timestamp
+  - `updated_at` (DateTimeField, auto_now=True) - Last update timestamp
+  - `metadata` (JSONField, default=dict) - Flexible metadata storage for future features
+  - Database index on `(user, -updated_at)` for efficient user chat queries
+  - Default ordering by `updated_at` descending (newest first)
+  - Docstring with assumptions and contract documentation
+- Message model (`apps/chats/models/message.py`)
+  - `chat` (ForeignKey) - Parent chat with cascading delete
+  - `user` (ForeignKey) - Message author
+  - `content` (TextField) - Message content (supports long text)
+  - `role` (CharField, choices=['user', 'assistant', 'system'], db_index=True) - Message role for LLM conversation
+  - `tokens` (IntegerField, default=0, validators=[MinValueValidator(0)]) - Token count for cost tracking
+  - `created_at` (DateTimeField, auto_now_add=True) - Message timestamp
+  - Database indexes on `(chat, created_at)`, `(user, created_at)`, and `(role)` for efficient queries
+  - Default ordering by `created_at` ascending (chronological)
+  - Docstring with assumptions and contract documentation
+- Admin interface (`apps/chats/admin/chat.py`)
+  - ChatAdmin with inline message display
+  - MessageAdmin for individual message management
+  - List displays with filtering and search capabilities
+  - Read-only timestamps and computed fields
+- Database migrations (`apps/chats/migrations/0001_initial.py`)
+  - Creates `chats_chat` and `chats_message` tables
+  - Sets up all indexes for query optimization
+- Comprehensive test suite (52 tests, 100% coverage)
+  - ChatModelTests (25 tests)
+    - Model creation with required and optional fields
+    - Metadata storage and modification
+    - Timestamps (auto_now_add and auto_now behavior)
+    - User relationships and isolation
+    - Chat ordering and filtering
+    - Cascading delete behavior
+    - Queryset operations (filter, count, exists, bulk_create, get, update, delete)
+  - MessageModelTests (27 tests)
+    - Model creation with required and optional fields
+    - Role validation (user/assistant/system)
+    - Token counting and storage
+    - Timestamps (auto_now_add behavior)
+    - Long text content support
+    - Unicode and special character support
+    - Chat and user relationships
+    - Message ordering (chronological)
+    - Cascading delete behavior
+    - Conversation flow testing with realistic multi-turn dialogs
+    - Queryset operations (filter by role/chat/user, bulk_create, get, update, delete)
+  - Test organization following CLAUDE.md guidelines
+    - Uses `django.test.TestCase` for proper database isolation
+    - Uses `setUpTestData` for efficient test fixture creation
+    - Each test is focused on single behavior
+    - Clear assertion methods (assertEqual, assertGreater, assertIn, etc.)
+    - Docstrings explaining test purpose
+
+**Updated**
+
+- `config/settings.py` - Added `"apps.chats"` to INSTALLED_APPS (between `apps.projects` and `apps.auth`)
+
+**Database**
+
+- New migration: `apps/chats/migrations/0001_initial.py`
+  - Creates Chat model with user FK, title, timestamps, metadata
+  - Creates Message model with chat FK, user FK, content, role, tokens, created_at
+  - Creates indexes for efficient querying:
+    - Chat: `(user, -updated_at)` for user's chats ordered by recency
+    - Message: `(chat, created_at)` for chat's messages in chronological order
+    - Message: `(user, created_at)` for user's messages across chats
+    - Message: `(role)` for role-based filtering
+
+**Technical Details**
+
+- Models use string references for clarity and decoupling
+- JSONField for metadata enables future Phase 3 features (system_prompt, model_name, settings)
+- Message role choices enable LLM integration (user/assistant/system roles)
+- Token field prepares for cost tracking and context window management (with MinValueValidator(0) for data integrity)
+- Cascading deletes ensure data integrity (delete chat → delete messages)
+- Database indexes optimize common query patterns
+- Models follow orthogonal systems principle - self-contained, no cross-app dependencies
+
+**Notes**
+
+- Models are foundational for Phase 2 API endpoints (CRUD operations)
+- Metadata field design allows storing model settings without schema migrations
+- Test coverage at 100% (52/52 tests passing, all code paths covered)
+- Models are fully documented with docstrings explaining assumptions and contracts
+
 #### Issue #25: API Authentication & Token Management
 
 **Added**
