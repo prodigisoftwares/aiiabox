@@ -1,7 +1,9 @@
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import LoginView, LogoutView
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.views.generic import TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, TemplateView
 
 from .forms import CustomAuthenticationForm
 
@@ -38,6 +40,19 @@ class CustomLogoutView(LogoutView):
     """
 
     next_page = "core:home"
+
+
+class CustomRegisterView(CreateView):
+    """
+    Custom register view with Tailwind styling.
+
+    Uses UserCreationForm for user registration.
+    Redirects to login page on successful registration.
+    """
+
+    template_name = "core/auth/register.html"
+    form_class = UserCreationForm
+    success_url = reverse_lazy("core:login")
 
 
 def handler_404(request, exception=None):

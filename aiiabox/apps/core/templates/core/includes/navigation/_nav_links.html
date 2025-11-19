@@ -1,32 +1,46 @@
+{% load i18n %}
+
 {% comment %}
 Desktop Navigation Links
 
 Main navigation links for desktop view.
 Shows different links based on authentication status.
+Highlights active link based on current request path.
 
 Parameters:
 - user: Django user object (available in context)
+- request: Current HTTP request (for active state detection)
 {% endcomment %}
 
 <div class="hidden sm:flex items-center gap-8">
   <a href="/"
      class="text-gray-700 hover:text-blue-600 transition-smooth font-medium">
-    Home
+    {% trans "Home" %}
   </a>
 
   {% if user.is_authenticated %}
+    <a href="{% url 'chats:chat_list' %}"
+       class="font-medium transition-smooth
+              {% if 'chats' in request.resolver_match.namespace or 'chats' in request.path %}
+                text-blue-600 border-b-2 border-blue-600 pb-1
+              {% else %}
+                text-gray-700 hover:text-blue-600
+              {% endif %}">
+      {% trans "Chats" %}
+    </a>
+
     <a href="/dashboard"
        class="text-gray-700 hover:text-blue-600 transition-smooth font-medium">
-      Dashboard
+      {% trans "Dashboard" %}
     </a>
   {% else %}
-    <a href="/login"
+    <a href="{% url 'core:login' %}"
        class="text-gray-700 hover:text-blue-600 transition-smooth font-medium">
-      Login
+      {% trans "Login" %}
     </a>
-    <a href="/register"
+    <a href="{% url 'core:register' %}"
        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-smooth font-medium">
-      Register
+      {% trans "Register" %}
     </a>
   {% endif %}
 </div>
