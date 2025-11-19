@@ -11,8 +11,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
 from ..models import Chat, Message
+from .chat_serializer import ChatSerializer
+from .message_serializer import MessageSerializer
 from .permissions import IsOwnerOrReadOnly
-from .serializers import ChatSerializer, MessageSerializer
 
 
 class StandardResultsSetPagination(PageNumberPagination):
