@@ -445,6 +445,9 @@ djlint==1.36.4 ; python_version >= "3.12" and python_version < "4" \
     --hash=sha256:e9699b8ac3057a6ed04fb90835b89bee954ed1959c01541ce4f8f729c938afdd \
     --hash=sha256:ead475013bcac46095b1bbc8cf97ed2f06e83422335734363f8a76b4ba7e47c2 \
     --hash=sha256:ff9faffd7d43ac20467493fa71d5355b5b330a00ade1c4d1e859022f4195223b
+drf-nested-routers==0.95.0 ; python_version >= "3.12" and python_version < "4" \
+    --hash=sha256:815978f802e578fd7035c74040c104909cbe97615de89a275d77e928f4029891 \
+    --hash=sha256:dd489c33d667aaa81383ffaa8c74781d2b353d8f0795716ae37fc59ee297b7c4
 dulwich==0.24.8 ; python_version >= "3.12" and python_version < "4" \
     --hash=sha256:07aa6e7d41358fcba2a8ac53731e1b8ab201cac7a192ec678ef0da34c7643cf1 \
     --hash=sha256:0e9aacbbb0b0cf4b3fecac2c29ddd4d4e36f03ced30851889c193986e8bb327e \
