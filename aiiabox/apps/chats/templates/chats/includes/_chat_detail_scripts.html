@@ -1,0 +1,42 @@
+{% comment %}
+Chat Detail Scripts
+
+Alpine.js component for chat detail view interactivity.
+{% endcomment %}
+
+<script>
+  function chatDetail() {
+    return {
+      showDeleteModal: false,
+
+      init() {
+        this.scrollToBottom();
+        this.observeMessages();
+      },
+
+      scrollToBottom() {
+        const container = document.getElementById('messages-container');
+        if (container) {
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+          }, 0);
+        }
+      },
+
+      observeMessages() {
+        const container = document.getElementById('messages-container');
+        if (container) {
+          const observer = new MutationObserver(() => {
+            this.scrollToBottom();
+          });
+
+          observer.observe(container, { childList: true, subtree: true });
+        }
+      },
+
+      handleScroll() {
+        // Placeholder for future scroll detection logic
+      },
+    };
+  }
+</script>

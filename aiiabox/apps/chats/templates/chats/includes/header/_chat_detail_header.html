@@ -1,0 +1,32 @@
+{% load i18n %}
+
+{% comment %}
+Chat Detail Header
+
+Displays chat title, creation date, message count, and delete button.
+{% endcomment %}
+
+<div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 p-4 sm:p-6 bg-white dark:bg-gray-950 sticky top-0 z-10">
+  <div class="max-w-4xl mx-auto flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-50">
+        {{ chat.title }}
+      </h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        {% trans "Created" %} {{ chat.created_at|date:"M d, Y H:i" }}
+        •
+        {% blocktrans count counter=chat.messages|length %}
+          {{ counter }} message
+        {% plural %}
+          {{ counter }} messages
+        {% endblocktrans %}
+      </p>
+    </div>
+
+    {# Delete button #}
+    <button @click="showDeleteModal = true"
+            class="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200">
+      {% trans "Delete" %}
+    </button>
+  </div>
+</div>

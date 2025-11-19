@@ -11,50 +11,10 @@
        @keydown.escape.window="showDeleteModal = false">
 
     {# Chat header #}
-    <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 p-4 sm:p-6 bg-white dark:bg-gray-950 sticky top-0 z-10">
-      <div class="max-w-4xl mx-auto flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-50">
-            {{ chat.title }}
-          </h1>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {% trans "Created" %} {{ chat.created_at|date:"M d, Y H:i" }}
-            •
-            {% blocktrans count counter=chat.messages|length %}
-              {{ counter }} message
-            {% plural %}
-              {{ counter }} messages
-            {% endblocktrans %}
-          </p>
-        </div>
-
-        {# Delete button #}
-        <button @click="showDeleteModal = true"
-                class="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200">
-          {% trans "Delete" %}
-        </button>
-      </div>
-    </div>
+    {% include "chats/includes/header/_chat_detail_header.html" %}
 
     {# Messages container #}
-    <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-0"
-         id="messages-container"
-         @scroll="handleScroll()">
-      <div class="max-w-4xl mx-auto w-full">
-        {% if chat.messages.exists %}
-          {% for message in chat.messages.all %}
-            {% include "chats/includes/_message_item.html" %}
-          {% endfor %}
-        {% else %}
-          {# Empty state #}
-          <div class="text-center py-12">
-            <p class="text-gray-600 dark:text-gray-400">
-              {% trans "No messages yet. Start the conversation!" %}
-            </p>
-          </div>
-        {% endif %}
-      </div>
-    </div>
+    {% include "chats/includes/_messages_container.html" %}
 
     {# Message input form #}
     <div class="flex-shrink-0">
@@ -63,89 +23,8 @@
   </div>
 
   {# Delete confirmation modal #}
-  <div x-show="showDeleteModal"
-       @click.away="showDeleteModal = false"
-       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-       x-transition:enter="transition duration-300"
-       x-transition:enter-start="opacity-0"
-       x-transition:enter-end="opacity-100"
-       x-transition:leave="transition duration-300"
-       x-transition:leave-start="opacity-100"
-       x-transition:leave-end="opacity-0">
+  {% include "chats/includes/_delete_modal.html" %}
 
-    <div class="bg-white dark:bg-gray-950 rounded-lg shadow-lg max-w-md mx-4"
-         x-transition:enter="transition duration-300"
-         x-transition:enter-start="transform scale-95 opacity-0"
-         x-transition:enter-end="transform scale-100 opacity-100"
-         x-transition:leave="transition duration-300"
-         x-transition:leave-start="transform scale-100 opacity-100"
-         x-transition:leave-end="transform scale-95 opacity-0">
-
-      <div class="p-6">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-50 mb-4">
-          {% trans "Delete chat?" %}
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-6">
-          {% trans "Are you sure you want to delete this chat? This action cannot be undone." %}
-        </p>
-
-        <div class="flex gap-3 justify-end">
-          <button @click="showDeleteModal = false"
-                  class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200">
-            {% trans "Cancel" %}
-          </button>
-          <a href="{% url 'chats:chat_delete' chat.pk %}"
-             class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200">
-            {% trans "Delete" %}
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {% comment %}
-  Alpine.js component for chat detail view.
-
-  Features:
-    - Auto-scroll to newest message on page load
-    - Auto-scroll when new messages arrive
-    - Delete confirmation modal with keyboard support (Escape to close)
-    - Smooth animations for modal appearance
-  {% endcomment %}
-  <script>
-    function chatDetail() {
-      return {
-        showDeleteModal: false,
-
-        init() {
-          this.scrollToBottom();
-          this.observeMessages();
-        },
-
-        scrollToBottom() {
-          const container = document.getElementById('messages-container');
-          if (container) {
-            setTimeout(() => {
-              container.scrollTop = container.scrollHeight;
-            }, 0);
-          }
-        },
-
-        observeMessages() {
-          const container = document.getElementById('messages-container');
-          if (container) {
-            const observer = new MutationObserver(() => {
-              this.scrollToBottom();
-            });
-
-            observer.observe(container, { childList: true, subtree: true });
-          }
-        },
-
-        handleScroll() {
-          // Placeholder for future scroll detection logic
-        },
-      };
-    }
-  </script>
+  {# Chat detail scripts #}
+  {% include "chats/includes/_chat_detail_scripts.html" %}
 {% endblock content %}
