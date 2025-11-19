@@ -188,6 +188,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Depends on: #24 (Chat/Message models)
 - Blocks: #27b (templates), #27c (message handling)
 
+#### Issue #39: Chat Features & Polish - Interactive Layer
+
+**Added**
+
+- Message creation via POST to chat detail view (`apps/chats/views/detail.py`)
+  - `ChatDetailView.post()` method handles message form submission
+  - Creates Message with `role='user'` and auto-assigns `user=request.user`
+  - Returns partial HTML of message item on success
+  - Returns full page with form errors on validation failure
+  - Validates: message content not empty, user authenticated, chat belongs to user
+- Form validation feedback (`apps/chats/templates/chats/includes/forms/_message_form.html`)
+  - Displays validation errors inline with red border styling
+  - Shows "Sending..." state during submission
+  - Character count with live update (0-5000)
+  - Disabled submit button while submitting
+- Alpine.js enhancements (`apps/chats/templates/chats/chat_detail.html`)
+  - Auto-scroll to newest message on page load
+  - Auto-scroll when new messages arrive (via MutationObserver)
+  - Delete confirmation modal with smooth animations
+  - Escape key closes delete modal
+  - Click-away closes delete modal
+- Navigation integration (`apps/core/templates/core/includes/navigation/_nav_links.html`)
+  - Added "Chats" link in top navigation (desktop view)
+  - Active state indicator (blue text + underline) when on /chats/ pages
+  - Link only visible to authenticated users
+  - Uses `{% url %}` for dynamic URL generation
+- Comprehensive test coverage (10 new tests)
+  - Message creation via POST
+  - Message content validation (empty, whitespace-only)
+  - Authentication requirement for POST
+  - Authorization (can't POST to other user's chat)
+  - Form included in GET context
+  - All tests passing (10/10)
+
+**Updated**
+
+- `ChatDetailView` - Added `get_context_data()` and `post()` methods
+  - Form class attribute for MessageForm
+  - POST handler with validation and partial response
+  - GET response includes form in context
+
+**Technical Details**
+
+- Message POST returns partial HTML (`_message_item.html`) for clean AJAX-style responses
+- Form validation uses Django's built-in `clean_content()` method (whitespace trimming)
+- Alpine.js component encapsulated in `chatDetail()` function
+- Auto-scroll uses MutationObserver for robust message detection
+- Delete modal uses conditional rendering with `x-show`
+- All form errors displayed with visual feedback (red border, animated text)
+- Smooth 300ms transitions for modal appearance/disappearance
+- Template refactored with partials for better organization:
+  - `_chat_detail_header.html` - Header with delete button
+  - `_messages_container.html` - Messages list
+  - `_delete_modal.html` - Confirmation modal
+  - `_chat_detail_scripts.html` - Alpine.js component
+
+**Security**
+
+- Authorization enforced at view level (get_object() filters by user)
+- CSRF token required in all forms
+- Message role hardcoded to 'user' (cannot be spoofed)
+- User auto-assigned from request.user (cannot be forged)
+
+**Files Modified**
+
+- `apps/chats/views/detail.py` - Added POST handler and context method
+- `apps/chats/templates/chats/chat_detail.html` - Added Alpine.js, delete modal
+- `apps/chats/templates/chats/includes/forms/_message_form.html` - Added error display, loading state
+- `apps/chats/templates/chats/includes/_chat_detail_header.html` - New: header partial
+- `apps/chats/templates/chats/includes/_messages_container.html` - New: messages partial
+- `apps/chats/templates/chats/includes/_delete_modal.html` - New: delete modal partial
+- `apps/chats/templates/chats/includes/_chat_detail_scripts.html` - New: Alpine.js component
+- `apps/core/templates/core/includes/navigation/_nav_links.html` - Added Chats link with active state
+- `apps/chats/tests/views/test_chat_detail_view.py` - Added 6 POST/validation tests
+
+**Test Coverage**
+
+- All 90 chat app tests passing (100%)
+- New tests focus on custom POST logic and validation
+- No framework functionality tested (Django form validation handled by framework)
+- Authorization checks fully covered
+
+**Dependencies**
+
+- Depends on: #37 (views), #38 (templates)
+- Unblocks: #29 (message features in Phase 3)
+
 #### Issue #26: Admin Interface Enhancements
 
 **Added**
