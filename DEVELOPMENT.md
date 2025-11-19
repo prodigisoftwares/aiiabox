@@ -927,3 +927,208 @@ apps/chats/
 ├── models.py              # Imports models (top-level)
 └── urls.py                # URL routing for chats (Phase 2.1)
 ```
+
+## API Architecture (Phase 2.5: Issue #28)
+
+### Chat API Module Structure
+
+The Chat API provides REST endpoints for programmatic access via CLI, VSCode plugin, and mobile clients.
+
+**Module Location:** `apps/chats/api/`
+
+```
+apps/chats/api/
+├── __init__.py           # Module exports
+├── permissions.py        # IsOwnerOrReadOnly permission class
+├── serializers.py        # ChatSerializer, MessageSerializer
+├── viewsets.py           # ChatViewSet, MessageViewSet
+├── urls.py               # DRF router configuration (nested routes)
+├── README.md             # API documentation
+└── tests/
+    ├── __init__.py
+    └── test_api.py       # 28 comprehensive API endpoint tests
+```
+
+### Authentication Strategy
+
+**Token-Based Authentication:**
+
+- Uses DRF's `TokenAuthentication`
+- Tokens stored in `authtoken_token` table
+- Format: `Authorization: Token <token_key>`
+- Session auth still used for web interface
+
+**Getting API Token:**
+
+```python
+from rest_framework.authtoken.models import Token
+user = User.objects.get(username='your_user')
+token, created = Token.objects.get_or_create(user=user)
+print(token.key)  # Share this securely with client
+```
+
+### API Endpoints
+
+**Base URL:** `http://localhost:8000/api/`
+
+#### Chat Endpoints
+
+| Method | Endpoint       | Auth  | Purpose                       |
+| ------ | -------------- | ----- | ----------------------------- |
+| GET    | `/chats/`      | Token | List user's chats (paginated) |
+| POST   | `/chats/`      | Token | Create new chat               |
+| GET    | `/chats/{id}/` | Token | Get chat detail               |
+| DELETE | `/chats/{id}/` | Token | Delete chat                   |
+
+#### Nested Message Endpoints
+
+| Method | Endpoint                          | Auth  | Purpose             |
+| ------ | --------------------------------- | ----- | ------------------- |
+| GET    | `/chats/{chat_id}/messages/`      | Token | List chat messages  |
+| POST   | `/chats/{chat_id}/messages/`      | Token | Add message to chat |
+| GET    | `/chats/{chat_id}/messages/{id}/` | Token | Get single message  |
+| DELETE | `/chats/{chat_id}/messages/{id}/` | Token | Delete message      |
+
+### Serializers
+
+**ChatSerializer:**
+
+- **Fields:** id (read-only), user (read-only, auto-set), title, created_at, updated_at, message_count
+- **Validation:**
+  - `title` required, max 200 chars
+  - Empty/whitespace-only titles rejected
+- **Method Field:** `message_count` = Message count for chat
+
+**MessageSerializer:**
+
+- **Fields:** id (read-only), chat, user (read-only, auto-set), content, role, tokens, created_at
+- **Validation:**
+  - `content` required, non-empty
+  - `role` must be 'user', 'assistant', or 'system'
+  - Auto-sets user from request context
+- **create() Method:** Sets user and validates chat ownership
+
+### Permission Classes
+
+**IsOwnerOrReadOnly:**
+
+- **View-Level:** Verifies authenticated user (token valid)
+- **View-Level (Nested):** For `/chats/{chat_id}/messages/`, verifies chat exists and user owns it
+- **Object-Level:** For individual operations, verifies user owns the object
+- **404 vs 403:** Returns 404 for non-existent objects (doesn't leak existence to other users)
+
+### Viewsets
+
+**ChatViewSet:**
+
+- Inherits from `ModelViewSet` (auto-generates CRUD)
+- **Auth:** TokenAuthentication
+- **Permissions:** IsAuthenticated, IsOwnerOrReadOnly
+- **get_queryset():** Filters chats to current user only
+- **perform_create():** Auto-sets user from request
+
+**MessageViewSet (Nested):**
+
+- Inherits from `ModelViewSet`
+- **Auth:** TokenAuthentication
+- **Permissions:** IsAuthenticated, IsOwnerOrReadOnly
+- **get_queryset():** Filters messages by chat_pk (nested) AND user ownership
+- **perform_create():** Auto-sets user AND validates chat ownership
+
+### Routing Configuration
+
+Uses `drf-nested-routers` library for nested resource routing:
+
+```python
+# Main router for chats
+router.register(r'chats', ChatViewSet, basename='chat')
+
+# Nested router for messages under each chat
+messages_router = NestedSimpleRouter(router, 'chats', lookup='chat')
+messages_router.register(r'messages', MessageViewSet, basename='message')
+```
+
+**Generated URLs:**
+
+- `/api/chats/` - Chat list/create
+- `/api/chats/{id}/` - Chat detail/update/delete
+- `/api/chats/{chat_id}/messages/` - Message list/create
+- `/api/chats/{chat_id}/messages/{id}/` - Message detail/update/delete
+
+### Pagination
+
+- **Default:** 20 items per page
+- **Configurable:** `?page_size=50` (max 100)
+- **Response:** Includes `count`, `next`, `previous`, `results`
+
+### Error Handling
+
+**Status Codes:**
+
+- 200: GET success
+- 201: POST/create success
+- 204: DELETE success
+- 400: Validation error (bad input)
+- 401: Unauthenticated (missing/invalid token)
+- 403: Forbidden (permission denied) - rarely returned, 404 preferred
+- 404: Not found (object doesn't exist or user has no access)
+
+**Response Format:**
+
+```json
+{
+  "detail": "Error message or field errors"
+}
+```
+
+### Testing
+
+**Test File:** `apps/chats/api/tests/test_api.py`
+**Test Count:** 28 comprehensive tests
+**Coverage:** >85% of API code
+
+**Test Categories:**
+
+- **Authentication:** Token required, invalid tokens rejected
+- **Authorization:** Users see only their own chats/messages
+- **CRUD Operations:** Create, read, update, delete for chats and messages
+- **Validation:** Title, content, role validation
+- **Pagination:** Page navigation, limits
+- **HTTP Status Codes:** 200, 201, 204, 400, 403, 404
+- **Permission Enforcement:** User isolation verified
+
+**Running Tests:**
+
+```bash
+python manage.py test apps.chats.api.tests.test_api
+```
+
+### Usage Examples
+
+**Get User's Chats:**
+
+```bash
+curl -H "Authorization: Token abc123" http://localhost:8000/api/chats/
+```
+
+**Create Chat:**
+
+```bash
+curl -X POST \
+  -H "Authorization: Token abc123" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"New Chat"}' \
+  http://localhost:8000/api/chats/
+```
+
+**Add Message:**
+
+```bash
+curl -X POST \
+  -H "Authorization: Token abc123" \
+  -H "Content-Type: application/json" \
+  -d '{"chat":1,"content":"Hello!","role":"user"}' \
+  http://localhost:8000/api/chats/1/messages/
+```
+
+For full documentation see: `apps/chats/api/README.md`

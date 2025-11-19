@@ -25,6 +25,7 @@ from apps.core.views import handler_404, handler_500
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("apps.auth.urls")),
+    path("api/", include("apps.chats.api.urls")),
     path("", include("apps.core.urls")),
     path("", include("apps.profiles.urls")),
     path("chats/", include("apps.chats.urls")),
