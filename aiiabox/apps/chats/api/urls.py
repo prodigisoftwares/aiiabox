@@ -7,7 +7,8 @@ under chats.
 
 from rest_framework_nested import routers
 
-from .viewsets import ChatViewSet, MessageViewSet
+from .chat_viewset import ChatViewSet
+from .message_viewset import MessageViewSet
 
 # Main router for chat endpoints
 router = routers.SimpleRouter()

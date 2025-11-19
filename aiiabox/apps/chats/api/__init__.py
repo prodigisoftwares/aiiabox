@@ -6,9 +6,10 @@ and proper permission checks to ensure user isolation.
 """
 
 from .chat_serializer import ChatSerializer
+from .chat_viewset import ChatViewSet
 from .message_serializer import MessageSerializer
+from .message_viewset import MessageViewSet
 from .permissions import IsOwnerOrReadOnly
-from .viewsets import ChatViewSet, MessageViewSet
 
 __all__ = [
     "IsOwnerOrReadOnly",
