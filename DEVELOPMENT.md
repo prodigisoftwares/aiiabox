@@ -237,14 +237,14 @@ Body uses `dark:` prefixes for dark mode support:
 **Current Setup:**
 
 - Tailwind CSS: Loaded via Tailwind CDN (includes JIT compiler)
-- Alpine.js: Loaded via jsDelivr CDN v3
-- No external CSS frameworks or bloat
+- Vanilla JavaScript: Stored locally in static/js/
+- No external JavaScript frameworks or dependencies
 
 **Production Optimization:**
 
 - Move Tailwind build to npm pipeline for better tree-shaking
 - Pre-compile CSS to reduce initial load
-- Store Alpine.js locally in static/js/
+- Keep JavaScript minimal and modular (only when necessary)
 
 ## App Structure
 
@@ -1132,3 +1132,346 @@ curl -X POST \
 ```
 
 For full documentation see: `apps/chats/api/README.md`
+
+## Vanilla JavaScript Guidelines
+
+### Philosophy
+
+- **Only use JavaScript when absolutely necessary**
+- **Pages must work without JavaScript** - use progressive enhancement
+- **Prefer native HTML5 features** over custom solutions
+- **Keep code simple and focused** - each script has one responsibility
+- **Store scripts locally** in `static/js/` - no CDN dependencies
+
+### When to Use JavaScript
+
+✅ **Use JavaScript for:**
+
+- Modal/dialog management (but use native `<dialog>` element)
+- Dropdown menus and toggles
+- Form validation feedback (real-time)
+- Scroll detection and auto-scroll
+- Auto-dismiss notifications
+- File upload validation before submission
+- Character counters
+- Keyboard navigation (Escape, arrows, etc.)
+
+❌ **Don't use JavaScript for:**
+
+- Form submission (use Django forms)
+- Page navigation (use HTML links)
+- Basic show/hide (use CSS or native `<dialog>`)
+- Layout and styling (use HTML and CSS)
+- Data that should be server-rendered
+
+### Native HTML5 Features to Use
+
+**Dialogs/Modals:**
+
+```html
+<!-- Use native <dialog> instead of custom modal divs -->
+<dialog id="rename-form">
+  <form method="dialog" @submit.prevent="renameChat(event)">
+    <h2>Rename Chat</h2>
+    <input type="text" name="title" required />
+    <button type="button" onclick="this.closest('dialog').close()">
+      Cancel
+    </button>
+    <button type="submit">Save</button>
+  </form>
+</dialog>
+
+<script>
+  // Open dialog
+  document.querySelector("button").onclick = () => {
+    document.getElementById("rename-form").showModal();
+  };
+</script>
+```
+
+**Details/Summary (Accordion):**
+
+```html
+<!-- Use native <details> for expandable sections -->
+<details>
+  <summary>Click to expand</summary>
+  <p>Content that shows/hides</p>
+</details>
+```
+
+**Input Validation:**
+
+```html
+<!-- Use built-in HTML5 validation -->
+<input type="email" required />
+<input type="number" min="0" max="100" />
+<input
+  type="text"
+  maxlength="255"
+  pattern="[A-Za-z0-9]+"
+  title="Letters and numbers only"
+/>
+
+<script>
+  form.addEventListener("submit", (e) => {
+    if (!form.checkValidity()) {
+      e.preventDefault();
+    }
+  });
+</script>
+```
+
+### Vanilla JavaScript Patterns
+
+**Event Listeners (Instead of Inline Handlers):**
+
+```javascript
+// Good - Use addEventListener
+document.querySelector(".button").addEventListener("click", () => {
+  // Handle click
+});
+
+// Bad - Avoid inline onclick
+// <button onclick="doSomething()">Click</button>
+```
+
+**Simple Component Pattern:**
+
+```javascript
+// Encapsulate component logic in a function
+function chatDetail() {
+  const state = {
+    chatId: null,
+  };
+
+  const methods = {
+    init() {
+      state.chatId = window.location.pathname.split("/")[2];
+      this.setupListeners();
+    },
+
+    setupListeners() {
+      document.querySelector(".rename-btn").addEventListener("click", () => {
+        document.getElementById("rename-form").showModal();
+      });
+    },
+
+    async renameChat(event) {
+      const form = event.target;
+      const newTitle = form.querySelector('input[name="title"]').value.trim();
+
+      if (!newTitle) {
+        alert("Title cannot be empty");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/chats/${state.chatId}/`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken":
+              document.querySelector("[name=csrfmiddlewaretoken]")?.value || "",
+          },
+          body: JSON.stringify({ title: newTitle }),
+        });
+
+        if (!response.ok) {
+          alert("Error updating chat");
+          return;
+        }
+
+        document.querySelector("h1").textContent = newTitle;
+        document.getElementById("rename-form").close();
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error updating chat");
+      }
+    },
+  };
+
+  return methods;
+}
+
+// Initialize
+const detail = chatDetail();
+document.addEventListener("DOMContentLoaded", () => detail.init());
+```
+
+**Auto-Scroll Pattern:**
+
+```javascript
+function chatScroller() {
+  const container = document.getElementById("messages-container");
+
+  return {
+    scrollToBottom() {
+      if (container) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 0);
+      }
+    },
+
+    observeMessages() {
+      const observer = new MutationObserver(() => this.scrollToBottom());
+      observer.observe(container, { childList: true, subtree: true });
+    },
+
+    init() {
+      this.scrollToBottom();
+      this.observeMessages();
+    },
+  };
+}
+
+chatScroller().init();
+```
+
+**Click-Away Pattern (Close on Outside Click):**
+
+```javascript
+const modal = document.getElementById("modal");
+const openBtn = document.querySelector(".open-modal");
+
+openBtn.addEventListener("click", () => {
+  modal.showModal();
+});
+
+// Close when clicking outside the dialog
+modal.addEventListener("click", (e) => {
+  // Click on dialog itself, not inside it
+  if (e.target === modal) {
+    modal.close();
+  }
+});
+
+// Close on Escape key (native to <dialog>)
+// No JavaScript needed - browsers handle this automatically
+```
+
+**Keyboard Navigation Pattern:**
+
+```javascript
+function dropdownMenu() {
+  const menu = document.querySelector(".dropdown-menu");
+  const items = menu.querySelectorAll('[role="menuitem"]');
+  let currentIndex = -1;
+
+  const methods = {
+    handleKeydown(e) {
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          currentIndex = Math.min(currentIndex + 1, items.length - 1);
+          items[currentIndex].focus();
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          currentIndex = Math.max(currentIndex - 1, 0);
+          items[currentIndex].focus();
+          break;
+        case "Escape":
+          menu.close();
+          break;
+      }
+    },
+
+    init() {
+      menu.addEventListener("keydown", (e) => this.handleKeydown(e));
+    },
+  };
+
+  return methods;
+}
+
+dropdownMenu().init();
+```
+
+**Form Validation (Client-Side Optional):**
+
+```javascript
+// Optional client-side validation for UX
+// Server-side validation is ALWAYS authoritative
+
+const form = document.querySelector("form");
+const titleInput = form.querySelector('input[name="title"]');
+const errorDiv = document.querySelector(".error-message");
+
+titleInput.addEventListener("blur", () => {
+  const value = titleInput.value.trim();
+
+  if (!value) {
+    errorDiv.textContent = "Title cannot be empty";
+    titleInput.classList.add("has-error");
+  } else if (value.length > 255) {
+    errorDiv.textContent = "Title must be 255 characters or less";
+    titleInput.classList.add("has-error");
+  } else {
+    errorDiv.textContent = "";
+    titleInput.classList.remove("has-error");
+  }
+});
+
+// Clear error when user starts typing again
+titleInput.addEventListener("input", () => {
+  if (titleInput.classList.contains("has-error")) {
+    errorDiv.textContent = "";
+    titleInput.classList.remove("has-error");
+  }
+});
+```
+
+### Structure for Complex Interactions
+
+For larger interactive features, organize scripts like this:
+
+```
+static/js/
+├── chat-detail.js      # Chat detail page interactions
+├── chat-list.js        # Chat list page interactions
+├── forms.js            # Form-related helpers
+└── utils.js            # Shared utilities (scrolling, etc.)
+```
+
+Each file should export a single component or utility:
+
+```javascript
+// static/js/chat-detail.js
+export function chatDetail() {
+  // ... component logic
+}
+
+// main.js or in template
+import { chatDetail } from "./chat-detail.js";
+document.addEventListener("DOMContentLoaded", () => chatDetail().init());
+```
+
+### Testing JavaScript
+
+Since JavaScript is optional and minimal, focus on testing:
+
+- **Django view tests** - Test server-side logic (required)
+- **Browser manual testing** - Test interactive features work
+- **Accessibility testing** - Ensure keyboard navigation works
+- **Network tests** - Fetch requests succeed with valid tokens
+
+### Common Mistakes to Avoid
+
+❌ **Don't:**
+
+- Use JavaScript frameworks when HTML/CSS is sufficient
+- Hide critical functionality behind JavaScript
+- Forget server-side validation (even with client-side validation)
+- Use inline `onclick` handlers or `eval()`
+- Make JavaScript dependent on external global state
+- Write "magic" JavaScript that does unexpected things
+
+✅ **Do:**
+
+- Use progressive enhancement - start with HTML
+- Keep JavaScript focused and modular
+- Always validate on server
+- Use event listeners and clean separation of concerns
+- Document why JavaScript is needed
+- Test without JavaScript to ensure graceful degradation

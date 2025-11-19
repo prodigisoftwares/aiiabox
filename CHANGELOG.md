@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### JavaScript Policy Update - Remove Alpine.js, Use Vanilla JavaScript
+
+**Updated**
+
+- Removed Alpine.js as a framework dependency
+- Updated CLAUDE.md to remove all Alpine.js guidance
+- Updated DEVELOPMENT.md to reflect vanilla JavaScript approach
+- Policy: Use vanilla JavaScript only when needed for progressive enhancement
+- Use native HTML5 features (like `<dialog>`) instead of JavaScript-dependent solutions
+- Principle: Pages must work without JavaScript; JavaScript adds polish only
+
+**Rationale**
+
+- Vanilla JavaScript is sufficient for common interactive patterns (modals, dropdowns, scroll detection)
+- Native HTML5 `<dialog>` element eliminates need for state-based modal management
+- Progressive enhancement achieves better accessibility and resilience
+- Reduces framework complexity and cognitive overhead
+- Follows CLAUDE.md principle: "Simplicity First - Write just enough code to get the job done"
+
+**Key Guidelines**
+
+- Use `<dialog>` for modals instead of `x-show` state management
+- Use event listeners for interactive elements instead of reactive bindings
+- Use CSS classes and transitions for animations instead of framework directives
+- Server-side form validation is authoritative; client-side validation is optional UX enhancement
+- Keep JavaScript focused on DOM manipulation and event handling
+
 ### Phase 2: Chat System Core
 
 #### Chat Models & Message Storage
