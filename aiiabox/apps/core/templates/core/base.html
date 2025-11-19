@@ -46,6 +46,11 @@
         button.hamburger-open .hamburger-bottom {
             transform: rotate(-45deg) translateY(-8px);
         }
+
+        /* Alpine.js x-cloak - hide until Alpine initializes */
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 
     {% block extra_css %}

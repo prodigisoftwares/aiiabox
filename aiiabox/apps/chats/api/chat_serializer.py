@@ -17,13 +17,13 @@ class ChatSerializer(serializers.ModelSerializer):
     Fields:
     - id (read-only): Auto-generated primary key
     - user (read-only): Chat owner, auto-set from request.user
-    - title (required): Chat title, max 200 chars
+    - title (optional): Chat title, defaults to "Chat" if not provided, max 200 chars
     - created_at (read-only): Timestamp when chat was created
     - updated_at (read-only): Timestamp when chat was last updated
     - message_count (read-only): Computed count of messages in chat
 
     Validation:
-    - title is required and cannot be empty/whitespace only
+    - title is optional; if provided, cannot be empty/whitespace only
     - title max length is 200 characters
 
     Assumes: User is authenticated (enforced by view permission classes)

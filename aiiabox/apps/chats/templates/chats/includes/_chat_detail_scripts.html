@@ -7,7 +7,7 @@ Alpine.js component for chat detail view interactivity.
 <script>
   function chatDetail() {
     return {
-      showDeleteModal: false,
+      chatId: window.location.pathname.split('/')[2],
 
       init() {
         this.scrollToBottom();
@@ -36,6 +36,38 @@ Alpine.js component for chat detail view interactivity.
 
       handleScroll() {
         // Placeholder for future scroll detection logic
+      },
+
+      async renameChat(event) {
+        const form = event.target;
+        const newTitle = form.querySelector('input[name="title"]').value.trim();
+
+        if (!newTitle) {
+          alert('Chat title cannot be empty.');
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/chats/${this.chatId}/`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+            },
+            body: JSON.stringify({ title: newTitle }),
+          });
+
+          if (!response.ok) {
+            alert('Error updating chat title. Please try again.');
+            return;
+          }
+
+          document.querySelector('h1').textContent = newTitle;
+          document.getElementById('rename-form').close();
+        } catch (error) {
+          console.error('Error updating chat title:', error);
+          alert('Error updating chat title. Please try again.');
+        }
       },
     };
   }

@@ -7,6 +7,7 @@
 
 {% block content %}
   <div class="flex flex-col h-full"
+       x-cloak
        x-data="chatDetail()"
        @keydown.escape.window="showDeleteModal = false">
 
@@ -25,6 +26,5 @@
   {# Delete confirmation modal #}
   {% include "chats/includes/_delete_modal.html" %}
 
-  {# Chat detail scripts #}
   {% include "chats/includes/_chat_detail_scripts.html" %}
 {% endblock content %}
