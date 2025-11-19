@@ -786,6 +786,22 @@ regex = ">=2023"
 tqdm = ">=4.62.2"
 
 [[package]]
+name = "drf-nested-routers"
+version = "0.95.0"
+description = "Nested resources for the Django Rest Framework"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "drf_nested_routers-0.95.0-py2.py3-none-any.whl", hash = "sha256:dd489c33d667aaa81383ffaa8c74781d2b353d8f0795716ae37fc59ee297b7c4"},
+    {file = "drf_nested_routers-0.95.0.tar.gz", hash = "sha256:815978f802e578fd7035c74040c104909cbe97615de89a275d77e928f4029891"},
+]
+
+[package.dependencies]
+Django = ">=4.2"
+djangorestframework = ">=3.15.0"
+
+[[package]]
 name = "dulwich"
 version = "0.24.8"
 description = "Python Git Library"
@@ -2692,4 +2708,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4"
-content-hash = "1b03eedfb2024022073f525bc5946470f03a8daeaa752a2d6d8c7894d412f0e4"
+content-hash = "ef8ef0b6687d990895e63632bbfec41ed4703a3d584bff63cdf1448fccc247bd"

@@ -19,7 +19,7 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=aiiabox
     ports:
-        - "6543:5432"
+      - "6543:5432"
   # ollama:
   #   image: ollama/ollama:latest
   #   ports:

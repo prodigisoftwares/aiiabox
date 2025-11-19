@@ -397,6 +397,137 @@ Following CLAUDE.md orthogonal systems principle:
 - Backward compatible - session auth still works for web interface
 - Refactored into separate apps for better orthogonality and maintainability
 
+#### Issue #28: DRF API Endpoints & Serializers
+
+**Added**
+
+- New `apps/chats/api/` module for REST API endpoints
+  - `apps/chats/api/__init__.py` - Module exports (IsOwnerOrReadOnly, serializers, viewsets)
+  - `apps/chats/api/permissions.py` - IsOwnerOrReadOnly permission class for chat/message authorization
+  - `apps/chats/api/serializers.py` - ChatSerializer and MessageSerializer with validation
+  - `apps/chats/api/viewsets.py` - ChatViewSet and MessageViewSet with CRUD operations
+  - `apps/chats/api/urls.py` - DRF router configuration with nested message routing
+  - `apps/chats/api/README.md` - Comprehensive API documentation with examples
+  - `apps/chats/api/tests/test_api.py` - 28 comprehensive API endpoint tests
+- DRF nested routes via `drf-nested-routers` library
+  - Chat list/detail endpoints: `/api/chats/`, `/api/chats/{id}/`
+  - Nested message endpoints: `/api/chats/{chat_id}/messages/`, `/api/chats/{chat_id}/messages/{id}/`
+- ChatSerializer
+  - Fields: id (read-only), user (read-only, auto-set), title, created_at, updated_at, message_count
+  - Validation: title required, max 200 chars, no empty/whitespace-only
+  - Method field: message_count computed from related messages
+- MessageSerializer
+  - Fields: id (read-only), chat, user (read-only, auto-set), content, role, tokens, created_at
+  - Validation: content required and non-empty, role one of {user, assistant, system}
+  - create() method: auto-sets user from authenticated request
+- ChatViewSet (ModelViewSet)
+  - CRUD operations for Chat model
+  - Authentication: TokenAuthentication
+  - Permissions: IsAuthenticated + IsOwnerOrReadOnly
+  - Filtering: queryset filtered to current user's chats only
+  - Pagination: 20 items per page (configurable)
+  - perform_create(): auto-sets user to authenticated user
+- MessageViewSet (nested under Chat, ModelViewSet)
+  - CRUD operations for Message model
+  - Authentication: TokenAuthentication
+  - Permissions: IsAuthenticated + IsOwnerOrReadOnly
+  - Filtering: queryset filtered to messages in specified chat owned by user
+  - Pagination: 20 items per page (configurable)
+  - perform_create(): auto-sets user and validates chat ownership
+- IsOwnerOrReadOnly permission class enhancements
+  - View-level permission: verifies authentication and (for nested routes) chat ownership
+  - Object-level permission: verifies user owns the specific chat or message
+  - Returns 404 instead of 403 for unauthorized access (doesn't leak existence)
+- API test suite
+  - Location: `apps/chats/api/tests/test_api.py`
+  - Count: 28 comprehensive tests
+  - Coverage: >85% of API code
+  - Tests for: authentication, authorization, CRUD operations, validation, pagination, HTTP status codes
+
+**Updated**
+
+- `config/urls.py` - Added API URL routing with `path("api/", include("apps.chats.api.urls"))`
+- `pyproject.toml` - Added `drf-nested-routers` dependency (^0.95.0)
+- DEVELOPMENT.md - Added comprehensive API architecture documentation
+
+**API Endpoints**
+
+| Method | Endpoint                              | Auth  | Purpose                        |
+| ------ | ------------------------------------- | ----- | ------------------------------ |
+| GET    | `/api/chats/`                         | Token | List user's chats (paginated)  |
+| POST   | `/api/chats/`                         | Token | Create new chat                |
+| GET    | `/api/chats/{id}/`                    | Token | Get chat detail                |
+| DELETE | `/api/chats/{id}/`                    | Token | Delete chat                    |
+| GET    | `/api/chats/{chat_id}/messages/`      | Token | List chat messages (paginated) |
+| POST   | `/api/chats/{chat_id}/messages/`      | Token | Add message to chat            |
+| GET    | `/api/chats/{chat_id}/messages/{id}/` | Token | Get single message             |
+| DELETE | `/api/chats/{chat_id}/messages/{id}/` | Token | Delete message                 |
+
+**HTTP Status Codes**
+
+- 200: GET success
+- 201: POST/create success
+- 204: DELETE success
+- 400: Validation error (bad input)
+- 401: Unauthenticated (missing/invalid token)
+- 404: Not found or no access (doesn't leak existence)
+
+**Example Requests**
+
+```bash
+# List chats
+curl -H "Authorization: Token abc123" http://localhost:8000/api/chats/
+
+# Create chat
+curl -X POST \
+  -H "Authorization: Token abc123" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"New Chat"}' \
+  http://localhost:8000/api/chats/
+
+# Add message
+curl -X POST \
+  -H "Authorization: Token abc123" \
+  -H "Content-Type: application/json" \
+  -d '{"chat":1,"content":"Hello!","role":"user"}' \
+  http://localhost:8000/api/chats/1/messages/
+```
+
+**Security & Design Decisions**
+
+- Token authentication required for all endpoints (no anonymous access)
+- User isolation: queryset filtering prevents unauthorized access to other users' data
+- Returns 404 instead of 403 for unauthorized access (security best practice - doesn't leak existence)
+- Nested routing keeps messages logically grouped under their chat
+- Auto-setting user from request context prevents users from creating content as other users
+- Pagination prevents large data dumps and improves performance
+- Validation on both serializer and viewset levels
+
+**Ready For**
+
+- Phase 7 (VSCode Plugin) - Can now use REST API for chat operations
+- Phase 8 (CLI) - All necessary endpoints available for command-line tool
+- Future mobile client implementations
+
+**Technical Details**
+
+- Uses drf-nested-routers for clean nested resource routing
+- Lookup parameter: `chat_pk` for nested routes (DRF standard)
+- Serializers validate input before model operations
+- Viewsets use get_queryset() for authorization filtering
+- Permission classes used for both view-level and object-level checks
+- All docstrings follow CLAUDE.md documentation standards
+- Tests follow CLAUDE.md philosophy: only test custom business logic
+
+**Notes**
+
+- API documentation at: `apps/chats/api/README.md`
+- Ready for CLI and VSCode plugin integration
+- Tokens are persistent and secure (40-character hex, stored in DB)
+- Supports pagination with configurable page size (?page_size=50)
+- All endpoints support JSON request/response format
+- CORS configuration can be added in Phase 9 if needed
+
 ### Phase 1: Foundation & Authentication
 
 #### Issue #8: Error Pages (404 & 500)
