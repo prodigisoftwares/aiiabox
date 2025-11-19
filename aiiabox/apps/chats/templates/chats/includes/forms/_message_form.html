@@ -5,23 +5,45 @@ Message input form partial for chat detail view.
 
 Parameters:
   - chat: Chat object (for form action URL)
+  - form: MessageForm instance with fields and validation errors
 
-Displays: Textarea for message input with submit button and character count
-Note: This form will integrate with message creation endpoint in Phase 3 (LLM integration)
+Displays: Textarea for message input with error feedback, submit button, and character count.
+Handles form validation errors and displays them inline.
 {% endcomment %}
 
 <div class="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-900">
   <form method="post"
         action="{% url 'chats:chat_detail' chat.pk %}"
         class="space-y-3"
-        x-data="{ characterCount: 0, maxLength: 5000 }"
+        x-data="{ characterCount: 0, maxLength: 5000, submitting: false }"
+        @submit="submitting = true"
         @input="characterCount = $el.querySelector('textarea').value.length">
     {% csrf_token %}
 
-    {# Message textarea #}
+    {# Message textarea with error state #}
     <div>
-      <textarea name="content" class="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" rows="3" placeholder="{% trans 'Type your message...' %}" maxlength="5000" required>
-      </textarea>
+      <textarea name="content"
+                class="w-full px-4 py-3 border rounded-lg resize-none dark:bg-gray-800 dark:text-gray-50 focus:outline-none focus:ring-2 transition-colors duration-200
+                       {% if form.content.errors %}
+                         border-red-500 dark:border-red-500 focus:ring-red-500
+                       {% else %}
+                         border-gray-300 dark:border-gray-600 focus:ring-blue-500
+                       {% endif %}"
+                rows="3"
+                placeholder="{% trans 'Type your message...' %}"
+                maxlength="5000"
+                required>{{ form.content.value|default:"" }}</textarea>
+
+      {# Validation error display #}
+      {% if form.content.errors %}
+        <div class="mt-2 text-sm text-red-600 dark:text-red-400 animate-pulse">
+          {% for error in form.content.errors %}
+            <p>
+              {{ error }}
+            </p>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
 
     {# Character count and submit #}
@@ -31,8 +53,10 @@ Note: This form will integrate with message creation endpoint in Phase 3 (LLM in
         <span>/ 5000</span>
       </div>
       <button type="submit"
-              class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
-        {% trans "Send" %}
+              :disabled="submitting"
+              class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+        <span x-show="!submitting">{% trans "Send" %}</span>
+        <span x-show="submitting">{% trans "Sending..." %}</span>
       </button>
     </div>
   </form>
