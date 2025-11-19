@@ -6,7 +6,7 @@
 {% endblock title %}
 
 {% block content %}
-  <div class="p-4 sm:p-6 lg:p-8">
+  <div class="p-4 sm:p-6 lg:p-8" x-data="chatListComponent()">
     <div class="max-w-4xl mx-auto">
       {% comment %}Page header with title, description, and action button{% endcomment %}
       {% include "chats/includes/header/_page_header.html" with title=page_title description=page_description action_url=action_url action_text=action_text %}
@@ -26,4 +26,34 @@
       {% endif %}
     </div>
   </div>
+
+  <script>
+    function chatListComponent() {
+      return {
+        async createNewChat() {
+          try {
+            const response = await fetch('/api/chats/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+              },
+              body: JSON.stringify({}),
+            });
+
+            if (!response.ok) {
+              alert('{% trans "Error creating chat. Please try again." %}');
+              return;
+            }
+
+            const data = await response.json();
+            window.location.href = `/chats/${data.id}/`;
+          } catch (error) {
+            console.error('Error creating chat:', error);
+            alert('{% trans "Error creating chat. Please try again." %}');
+          }
+        },
+      };
+    }
+  </script>
 {% endblock content %}

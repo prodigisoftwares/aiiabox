@@ -946,85 +946,120 @@ npm run tw:build          # Optimized production build
   - Group related styles together with clear section comments
   - Benefits: Easier maintenance, faster lookups, better code organization
 
-### Alpine.js
+### Vanilla JavaScript
 
-**Lightweight JavaScript framework for reactive components:**
+**Use vanilla JavaScript only when needed for progressive enhancement:**
 
-- Served as local static asset
-- Use for: drag-and-drop, auto-dismissing messages, show/hide toggles, dynamic UI updates
-- Syntax: `x-data`, `x-show`, `x-transition`, `x-init`, `@click`, `@dragover`, etc.
-- Keep JavaScript logic minimal and progressive - pages should work without JS
+- Store code in `static/js/` directory as local assets
+- Use modern ES6+ syntax (arrow functions, const/let, template literals, classes)
+- Keep JavaScript minimal and focused - pages must work without it
+- Progressive enhancement principle: core functionality first, JS adds polish
 
-**Component Pattern:**
+**When to Use JavaScript:**
 
-Create reusable Alpine.js components using function-based pattern:
+- Interactive components: modals, dropdowns, file uploads, drag-and-drop
+- Form validation feedback (optional, server-side always required)
+- Scroll detection and auto-scroll behavior
+- Real-time updates (auto-dismiss messages, character counters)
+- Event handling and DOM manipulation
 
-- Define components as functions in `<script>` tags: `function componentName() { return { ... } }`
-- Initialize with `x-data="componentName()"` on container element
-- Keep component logic focused and single-responsibility
-- Use descriptive method names: `handleSubmit()`, `validateFile()`, `handleDrop()`
-- Store component state in data properties: `uploading`, `validFiles`, `errors`
-- Provide immediate user feedback with reactive UI updates
+**When NOT to Use JavaScript:**
+
+- Simple show/hide states (use native HTML `<dialog>` or CSS)
+- Form submission (use Django forms with CSRF)
+- Navigation and links (use HTML `<a>` tags)
+- Basic page layout (use HTML and CSS only)
+
+**Code Patterns:**
+
+```javascript
+// Component factory pattern for encapsulation
+function componentName() {
+  const state = {
+    isOpen: false,
+    message: "",
+  };
+
+  const methods = {
+    open() {
+      state.isOpen = true;
+      this.render();
+    },
+    close() {
+      state.isOpen = false;
+      this.render();
+    },
+    render() {
+      // Update DOM based on state
+    },
+  };
+
+  return methods;
+}
+
+// Initialize component
+const component = componentName();
+document
+  .querySelector(".button")
+  .addEventListener("click", () => component.open());
+```
 
 **Example Patterns:**
 
-- **File upload with drag-and-drop:** `x-data="{ dragging: false, files: [] }"`
-- **Auto-dismissing notifications:** `x-init="setTimeout(() => show = false, 5000)"`
-- **Dropdown menus:** `x-data="{ menuOpen: false }"` with `@click.away="menuOpen = false"` and `@keydown.escape.window`
-- **Mobile menus:** `x-show="mobileMenuOpen"` with smooth transition classes and keyboard handling
-- **Scroll detection:** `x-data="{ scrolled: false }"` with `@scroll.window="scrolled = (window.pageYOffset > 0)"`
+- **Auto-dismissing notifications:** `setTimeout(() => element.remove(), 5000)`
+- **Dropdown menus:** Event listeners for click, click-away via `event.stopPropagation()`, escape key via `keydown`
+- **Mobile menus:** Toggle class with smooth CSS transitions, keyboard handling
+- **Scroll detection:** `window.addEventListener('scroll', () => { ... })`
+- **Form character count:** `input.addEventListener('input', () => { counter.textContent = input.value.length })`
+- **Native modals:** Use HTML5 `<dialog>` element with `.showModal()` and `.close()` methods
 
-**Lightbox/Modal Galleries:**
+**Form Validation (Optional Client-Side):**
 
-Function-based component pattern with keyboard and touch navigation:
+Client-side validation is optional and only for UX enhancement:
 
-- Use function factory: `x-data="galleryLightbox(photoCount)"` for scoped instances
-- Collect data from DOM: `init()` method gathers photo data from `data-*` attributes
-- Computed properties: Use getters (`get hasPrevious()`) for reactive UI states
-- Keyboard navigation: `@keydown.escape.window`, `@keydown.arrow-left.window`, `@keydown.arrow-right.window`
-- Touch/swipe support: Track `touchstart` and `touchend` events with threshold detection
-- Body scroll control: Toggle `document.body.style.overflow` to prevent background scrolling
-- DOM state binding: Use `data-*` attributes on elements to pass data to Alpine.js component
+- Server-side validation is always required and authoritative
+- Add client-side validation when it significantly improves UX:
+  - File type/size validation before upload
+  - Real-time character counting
+  - Password strength indicators
+- Display validation errors inline with clear messaging
+- Prevent form submission only if validation fails
+- Always validate on server even if client-side passes
 
-**Single Scope Pattern (CRITICAL):**
+**Example Client-Side Validation:**
 
-Use ONE Alpine scope per form/component tree:
+```javascript
+const form = document.querySelector("form");
+const titleInput = form.querySelector('input[name="title"]');
+const errorDiv = document.querySelector(".error-message");
 
-- Place `x-data="componentName()"` on the outermost container (e.g., `<form>`)
-- All child includes/partials inherit this scope automatically
-- DO NOT add nested `x-data` scopes unless truly independent
-- Child templates can reference parent scope variables (e.g., `validFiles`, `errors`)
-- Avoids `ReferenceError` when includes try to access component state
-- Example: Form component owns both submit state AND validation state for all child includes
+titleInput.addEventListener("blur", () => {
+  const value = titleInput.value.trim();
+  if (!value) {
+    errorDiv.textContent = "Title cannot be empty";
+    titleInput.classList.add("error");
+  } else {
+    errorDiv.textContent = "";
+    titleInput.classList.remove("error");
+  }
+});
+```
 
-**Form Validation Initialization:**
+**Event Handling Best Practices:**
 
-Don't show validation errors on page load:
+- Use `addEventListener()` instead of inline `onclick`
+- Delegate events from parent containers when handling multiple similar elements
+- Always remove listeners when elements are removed from DOM
+- Use `event.stopPropagation()` to prevent event bubbling when needed
+- Use `event.preventDefault()` carefully - document why it's needed
 
-- Start with `isValid: false` and empty error messages (`errors: { field: '' }`)
-- In `init()` method, only initialize non-error state (e.g., character counts, field values)
-- DO NOT call validation methods in `init()` - only validate on user interaction
-- Trigger validation on blur/input events: `@blur="validateField"`, `@input="validateField"`
-- Run full validation on submit: `@submit="handleSubmit"` calls `validateAll()`
-- This prevents showing "Field is required" errors before user interacts with form
+**DOM Manipulation:**
 
-### HTMX (Optional)
-
-**For progressive enhancement and partial page updates:**
-
-- Minimal framework, stored locally
-- Use for dynamic content updates without full page reloads
-- Maintains server-side rendering benefits while enhancing interactivity
-
-### Vanilla JavaScript
-
-**When Alpine.js or HTMX are not needed:**
-
-- Keep vanilla JavaScript minimal and focused
-- Use modern ES6+ syntax
-- Progressive enhancement principle applies
-- Store in `static/js/` directory as local assets
-- Use descriptive filenames and module pattern when appropriate
+- Use `document.querySelector()` for single elements
+- Use `document.querySelectorAll()` for multiple elements
+- Prefer setting classes over inline styles
+- Use template literals for HTML strings when needed
+- Keep DOM updates efficient - batch changes when possible
 
 **JavaScript File Refactoring Guidelines:**
 
